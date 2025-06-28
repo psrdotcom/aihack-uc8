@@ -14,7 +14,7 @@ from contextlib import asynccontextmanager, closing
 
 # from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field
-from psycopg import connect, ProgrammingError
+from psycopg2 import connect, ProgrammingError
 from contextlib import closing
 from mangum import Mangum
 

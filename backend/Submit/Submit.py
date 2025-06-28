@@ -33,7 +33,6 @@ def lambda_handler(event, context):
         # Parse multipart form
         multipart_data = decoder.MultipartDecoder(body, content_type)
         print(f"Multipart data parts: {len(multipart_data.parts)}")
-        s3_urls = []
         conn = get_postgresql_connection()
         cursor = conn.cursor()
         for part in multipart_data.parts:
@@ -56,7 +55,6 @@ def lambda_handler(event, context):
             },
             "body": json.dumps({
                 "status": "success",
-                "s3_urls": s3_urls
             })
         }
     except Exception as e:

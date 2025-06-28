@@ -125,7 +125,7 @@ def add_keyphrase_to_article(conn, cursor, article_id, article_date, entities):
     print(f"article_id: {article_id}")
     for entity in entities:
         print(f"Processing entity: {entity}")
-        entity_in_db = [db_entity for db_entity in entity_db_array if db_entity[3].lower() == entity['Text'].lower()]
+        entity_in_db = [db_entity for db_entity in entity_db_array if db_entity[2].lower() == entity['Text'].lower()]
         print(f"Entity in DB: {entity_in_db}")
         if not entity_in_db:
             current_time = datetime.datetime.utcnow()

@@ -2,9 +2,7 @@ name: Build Lambda Layer
 
 on:
   push:
-    paths:
-      - 'backend/requirements.txt'
-  workflow_dispatch:
+    branches: [main, backend_changes]
 
 jobs:
   build-and-publish-layer:

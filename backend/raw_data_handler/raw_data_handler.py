@@ -17,6 +17,7 @@ def lambda_handler(event, context):
     try:
         conn = get_postgresql_connection()
         cursor = conn.cursor()
+        comprehend = boto3.client('comprehend', region_name='us-east-1')
         for record in event['Records']:
             print(f"New record: {record}")
             bucket = record['s3']['bucket']['name']
@@ -49,7 +50,7 @@ def lambda_handler(event, context):
                     ContentType='text/csv'
                 )
                 conn.commit() 
-                start_jobs(f's3://{BUCKET_NAME}/{csv_filename}', article_id, boto3.client('comprehend'), role, cursor, conn)
+                start_jobs(f's3://{BUCKET_NAME}/{csv_filename}', article_id, comprehend, role, cursor, conn)
         cursor.close()
         conn.close()
     except Exception as e:
@@ -57,6 +58,8 @@ def lambda_handler(event, context):
         print(f"Error processing event: {e}")
 
 def start_jobs(s3_uri, articles_id, comprehend, role_arn, cursor, conn):
+    print(f"Starting jobs for article ID: {articles_id}")
+
     entities_job = comprehend.start_entities_detection_job(
                 InputDataConfig={'S3Uri': s3_uri, 'InputFormat': 'ONE_DOC_PER_LINE'},
                 OutputDataConfig={'S3Uri': 's3://awstraindata/output/entities/'},

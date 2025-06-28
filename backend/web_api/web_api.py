@@ -116,7 +116,7 @@ class NaturalLanguageQuery(BaseModel):
 
 # --- Database Connection ---
 # IMPORTANT: Use a read-only user for the database connection.
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://your_user:your_password@your_aurora_endpoint/myappdb").replace("postgresql://", "postgresql+psycopg://")
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://your_user:your_password@your_aurora_endpoint/myappdb")
 
 def get_db_connection():
     with connect(DATABASE_URL) as conn:

@@ -3,7 +3,8 @@ name: Deploy API Gateway
 on:
   push:
     paths:
-      - 'api/**'        # Trigger only if files inside api/ folder change
+      - 'api/**'
+    branches: [main, api]
 
 jobs:
   deploy-api:

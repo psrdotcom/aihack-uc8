@@ -66,7 +66,7 @@ def lambda_handler(event, context):
                 s3_urls.append(s3_url)
         cursor.close()
         conn.close()
-        return {"statusCode": 200, "status": "success", "count": len(articles), "data": articles, "s3_urls": s3_urls}
+        return {"statusCode": 200, "status": "success", "s3_urls": s3_urls}
     except Exception as e:
         traceback.print_exc() 
         return {"statusCode": 500, "body": f"❌ Error: {str(e)}"}

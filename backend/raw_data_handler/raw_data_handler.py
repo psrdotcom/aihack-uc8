@@ -61,14 +61,14 @@ def get_data_inline(data, articles_id, comprehend, role_arn, cursor, conn):
     print(f"Processing data for article ID: {articles_id}")
     entities_response = comprehend.detect_entities(
                 Text=data,
-                DataAccessRoleArn=role_arn,
+                # DataAccessRoleArn=role_arn,
                 LanguageCode='en'
             )
     print(f"Entities detected: {entities_response['Entities']}")
     add_entities_to_article(conn, cursor, articles_id, entities_response['Entities'])
     response = comprehend.detect_key_phrases(
             Text=data,
-            DataAccessRoleArn=role_arn,
+            # DataAccessRoleArn=role_arn,
             LanguageCode='en'
         )
     print(f"Key phrases detected: {response['KeyPhrases']}")
@@ -77,7 +77,7 @@ def get_data_inline(data, articles_id, comprehend, role_arn, cursor, conn):
     add_entities_to_article(conn, cursor, articles_id, response['KeyPhrases'])
     sentiment_response = comprehend.detect_sentiment(
                 Text=data,
-                DataAccessRoleArn=role_arn,
+                # DataAccessRoleArn=role_arn,
                 LanguageCode='en'
     )
     print(f"Sentiment detected: {sentiment_response['Sentiment']}")

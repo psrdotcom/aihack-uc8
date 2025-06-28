@@ -59,7 +59,6 @@ def lambda_handler(event, context):
 
 def start_jobs(s3_uri, articles_id, comprehend, role_arn, cursor, conn):
     print(f"Starting jobs for article ID: {articles_id}")
-
     entities_job = comprehend.start_entities_detection_job(
                 InputDataConfig={'S3Uri': s3_uri, 'InputFormat': 'ONE_DOC_PER_LINE'},
                 OutputDataConfig={'S3Uri': 's3://awstraindata/output/entities/'},
@@ -67,7 +66,9 @@ def start_jobs(s3_uri, articles_id, comprehend, role_arn, cursor, conn):
                 LanguageCode='en',
                 JobName='MyEntityDetectionJob_'+ articles_id + '_' + str(int(time.time()))
             )
+    print(f"Entities job started: {entities_job['JobId']}")
     result = comprehend.describe_entities_detection_job(JobId=entities_job['JobId'])
+    print(f"Entities job description: {result}")
     entities_output = result['EntitiesDetectionJobProperties']['OutputDataConfig']['S3Uri']
 
     # SENTIMENT detection job
@@ -78,7 +79,9 @@ def start_jobs(s3_uri, articles_id, comprehend, role_arn, cursor, conn):
         LanguageCode='en',
         JobName='MySentimentDetectionJob_' + articles_id + '_' + str(int(time.time()))
     )
+    print(f"Sentiment job started: {sentiment_job['JobId']}")
     res = comprehend.describe_sentiment_detection_job(JobId=sentiment_job['JobId'])
+    print(f"Sentiment job description: {res}")
     sentiment_output = res['SentimentDetectionJobProperties']['OutputDataConfig']['S3Uri']
 
     # KEY PHRASES detection job
@@ -89,7 +92,9 @@ def start_jobs(s3_uri, articles_id, comprehend, role_arn, cursor, conn):
         LanguageCode='en',
         JobName='MyKeyPhrasesDetectionJob_' + articles_id + '_' + str(int(time.time()))
     )
+    print(f"Key Phrases job started: {phrases_job['JobId']}")
     res = comprehend.describe_key_phrases_detection_job(JobId=phrases_job['JobId'])
+    print(f"Key Phrases job description: {res}")
     key_phrases_output = res['KeyPhrasesDetectionJobProperties']['OutputDataConfig']['S3Uri']
     print("Entities Job Response:", entities_output)
     print("Sentiment Job Response:", sentiment_output)

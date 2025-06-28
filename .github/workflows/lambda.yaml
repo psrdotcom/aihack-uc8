@@ -81,7 +81,7 @@ jobs:
                 --function-name "$function_name" \
                 --s3-bucket "$DEPLOY_BUCKET" \
                 --s3-key "${function_name}.zip" \
-                --layers arn:aws:lambda:us-east-1:269854564686:layer:my-python-layer:2
+                --layers "arn:aws:lambda:us-east-1:269854564686:layer:my-python-layer:2"
             else
               echo "Creating Lambda function: $function_name"
               aws lambda create-function \
@@ -92,6 +92,6 @@ jobs:
                 --code S3Bucket="$DEPLOY_BUCKET",S3Key="${function_name}.zip" \
                 --timeout 900 \
                 --vpc-config SubnetIds=subnet-02e62e34308bb07d5,subnet-0534b99dd34e646f1,SecurityGroupIds=sg-0b9a6b812b30a1107 \
-                --layers arn:aws:lambda:us-east-1:269854564686:layer:my-python-layer:2
+                --layers "arn:aws:lambda:us-east-1:269854564686:layer:my-python-layer:2"
             fi
           done

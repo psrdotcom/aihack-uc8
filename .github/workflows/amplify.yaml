@@ -32,6 +32,15 @@ jobs:
           AWS_ACCESS_KEY_ID: AKIAT5VEV4FHFQQJBZVX
           AWS_SECRET_ACCESS_KEY: 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
           AWS_DEFAULT_REGION: 'us-east-1'  # change if needed
-          GITHUB_PAT: "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"
+        run: |
+          GITHUB_PAT=$(aws secretsmanager get-secret-value \
+            --secret-id github_pat \
+            --query SecretString \
+            --output text)
+
+          # If your secret is a JSON, extract the actual value
+          # GITHUB_PAT=$(echo "$GITHUB_PAT" | jq -r .github_pat)
+
+          echo "GITHUB_PAT=$GITHUB_PAT" >> $GITHUB_ENV
         run: |
           python amplify.py "${{ github.event.inputs.repo }}" "${{ github.event.inputs.branch }}"

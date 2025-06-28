@@ -24,9 +24,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS articles (
                         body TEXT,
                         source TEXT,
                         published_date TEXT,
-                        location_mentions TEXT,
-                        officials_involved TEXT,
-                        relevance_category TEXT,
+                        entities TEXT,
                         sentiment TEXT
                     )""")
 cursor.execute("""

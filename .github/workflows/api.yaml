@@ -28,4 +28,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: o56LCVEDcTPD8RgU2iWtz8SBklKa5DqQ6+nCYawf
           AWS_REGION: us-east-1          # or your region
         run: |
-          python api/deploy_api.py
+          python ../../api/deploy_api.py

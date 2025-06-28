@@ -41,6 +41,7 @@ def lambda_handler(event, context):
             articles = extract_articles(io.BytesIO(part.content))
             print(f"Extracted {len(articles)} articles from part")
             for article in articles:
+                print(f"Processing article: {article['Title']}")
                 output_csv = io.StringIO()
                 writer = csv.DictWriter(output_csv, fieldnames=["Title", "Source", "Date", "Content"])
                 writer.writeheader()
@@ -50,7 +51,7 @@ def lambda_handler(event, context):
                 csv_filename = f"input/articles-{article_id}.csv"
                 cursor.execute("""
                         INSERT INTO articles (article_id, title, body, source, published_date)
-                        VALUES (%s, %s, %s, %s, %s)""", (article_id, article[0], article[1], article[2], article[3]))
+                        VALUES (%s, %s, %s, %s, %s)""", (article_id, article['Title'], article['Content'], article['Source'], article['Date']))
                 # Upload to S3
                 print(f"Uploading CSV to S3: {csv_filename}")
                 s3.put_object(

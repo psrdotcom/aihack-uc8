@@ -15,7 +15,7 @@ app = FastAPI()
 s3 = boto3.client('s3')
 BUCKET_NAME = 'awstraindata'
 
-def lambda_handler(event, context):
+def lambda_handler(event):
     try:
         # Decode base64-encoded body (API Gateway encodes binary automatically)
         body = base64.b64decode(event['body'])

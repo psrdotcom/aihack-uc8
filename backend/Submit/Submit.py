@@ -41,7 +41,7 @@ def lambda_handler(event, context):
             articles = extract_articles(io.BytesIO(part.content))
             print(f"Extracted {len(articles)} articles from part")
             for article in articles:
-                print(f"Processing article: {article[0]}")
+                # print(f"Processing article: {article[0]}")
                 output_csv = io.StringIO()
                 writer = csv.DictWriter(output_csv, fieldnames=["Title", "Source", "Date", "Content"])
                 writer.writeheader()

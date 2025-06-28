@@ -28,13 +28,35 @@ def invoke_bedrock_agent_to_get_sql(
     Returns:
         The generated SQL query string, or None if not found.
     """
+    prompt = f"""
+    convert the natural language query into a pgsql query. Return ONLY the sql command as an answer.
+    Here is the table schema:
+    <schema>
+    CREATE TABLE articles(
+        articles_id text,
+        title text,
+        body text,
+        "source" text,
+        published_date text,
+        entities text,
+        sentiment text
+    );
+    </schema>
+    Here is the user's question:
+    <question>
+    {question}
+    </question>
+    while creating query ensure that it can ignore case sensitive.
+    Give me the stream response as json in an API call
+    
+    """
     try:
         # The invoke_agent API returns a streaming response.
         response = bedrock_agent_runtime.invoke_agent(
             agentId=agent_id,
             agentAliasId=agent_alias_id,
             sessionId=session_id,
-            inputText=question,
+            inputText=prompt,
              streamingConfigurations = { 
                 "applyGuardrailInterval" : 20,
                 "streamFinalResponse" : False

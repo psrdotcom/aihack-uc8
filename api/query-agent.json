@@ -1,6 +1,6 @@
 {
   "apiName": "hackathon",
-  "resourcePath": "query/agent",
+  "resourcePath": "queryagent",
   "method": {
     "httpMethod": "POST",
     "authorizationType": "NONE",

@@ -1,0 +1,962 @@
+[
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 30,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 47,
+        "endOffset": 53,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 55,
+        "endOffset": 63,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 69,
+        "endOffset": 80,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 26,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 43,
+        "endOffset": 50,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 52,
+        "endOffset": 62,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 68,
+        "endOffset": 74,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 29,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 46,
+        "endOffset": 52,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 54,
+        "endOffset": 60,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 66,
+        "endOffset": 74,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 23,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 40,
+        "endOffset": 49,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 51,
+        "endOffset": 57,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 63,
+        "endOffset": 73,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 25,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 42,
+        "endOffset": 51,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 53,
+        "endOffset": 62,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 68,
+        "endOffset": 74,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 29,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 46,
+        "endOffset": 52,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 54,
+        "endOffset": 60,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 66,
+        "endOffset": 73,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 27,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 44,
+        "endOffset": 51,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 53,
+        "endOffset": 59,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 65,
+        "endOffset": 79,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 24,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 41,
+        "endOffset": 51,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 53,
+        "endOffset": 61,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 67,
+        "endOffset": 72,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 27,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 44,
+        "endOffset": 52,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 54,
+        "endOffset": 65,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 71,
+        "endOffset": 76,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 24,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 41,
+        "endOffset": 50,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 52,
+        "endOffset": 57,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 63,
+        "endOffset": 70,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 23,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 40,
+        "endOffset": 49,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 51,
+        "endOffset": 57,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 63,
+        "endOffset": 69,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 23,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 40,
+        "endOffset": 54,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 56,
+        "endOffset": 67,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 73,
+        "endOffset": 82,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 23,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 40,
+        "endOffset": 50,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 52,
+        "endOffset": 58,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 64,
+        "endOffset": 73,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 27,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 44,
+        "endOffset": 55,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 57,
+        "endOffset": 66,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 72,
+        "endOffset": 82,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 23,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 40,
+        "endOffset": 45,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 47,
+        "endOffset": 57,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 63,
+        "endOffset": 70,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 27,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 44,
+        "endOffset": 54,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 56,
+        "endOffset": 65,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 71,
+        "endOffset": 80,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 24,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 41,
+        "endOffset": 48,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 50,
+        "endOffset": 60,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 66,
+        "endOffset": 80,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 26,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 43,
+        "endOffset": 49,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 51,
+        "endOffset": 57,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 63,
+        "endOffset": 70,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 29,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 46,
+        "endOffset": 54,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 56,
+        "endOffset": 65,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 71,
+        "endOffset": 80,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 25,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 42,
+        "endOffset": 50,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 52,
+        "endOffset": 59,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 65,
+        "endOffset": 74,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 24,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 41,
+        "endOffset": 48,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 50,
+        "endOffset": 56,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 62,
+        "endOffset": 68,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 29,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 46,
+        "endOffset": 56,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 58,
+        "endOffset": 64,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 70,
+        "endOffset": 79,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 23,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 40,
+        "endOffset": 46,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 48,
+        "endOffset": 55,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 61,
+        "endOffset": 71,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 25,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 42,
+        "endOffset": 49,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 51,
+        "endOffset": 58,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 64,
+        "endOffset": 73,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 26,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 43,
+        "endOffset": 53,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 55,
+        "endOffset": 62,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 68,
+        "endOffset": 77,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 24,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 41,
+        "endOffset": 55,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 57,
+        "endOffset": 67,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 73,
+        "endOffset": 80,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 24,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 41,
+        "endOffset": 47,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 49,
+        "endOffset": 56,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 62,
+        "endOffset": 71,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 25,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 42,
+        "endOffset": 52,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 54,
+        "endOffset": 64,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 70,
+        "endOffset": 77,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 25,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 42,
+        "endOffset": 49,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 51,
+        "endOffset": 65,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 71,
+        "endOffset": 80,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 25,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 42,
+        "endOffset": 48,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 50,
+        "endOffset": 59,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 65,
+        "endOffset": 74,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 23,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 40,
+        "endOffset": 47,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 49,
+        "endOffset": 55,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 61,
+        "endOffset": 71,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 23,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 40,
+        "endOffset": 46,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 48,
+        "endOffset": 55,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 61,
+        "endOffset": 70,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 29,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 46,
+        "endOffset": 53,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 55,
+        "endOffset": 60,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 66,
+        "endOffset": 76,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 25,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 42,
+        "endOffset": 49,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 51,
+        "endOffset": 61,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 67,
+        "endOffset": 76,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 24,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 41,
+        "endOffset": 52,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 54,
+        "endOffset": 63,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 69,
+        "endOffset": 79,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 30,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 47,
+        "endOffset": 57,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 59,
+        "endOffset": 64,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 70,
+        "endOffset": 75,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 25,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 42,
+        "endOffset": 51,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 53,
+        "endOffset": 60,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 66,
+        "endOffset": 75,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 27,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 44,
+        "endOffset": 50,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 52,
+        "endOffset": 58,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 64,
+        "endOffset": 71,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 23,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 40,
+        "endOffset": 54,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 56,
+        "endOffset": 67,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 73,
+        "endOffset": 80,
+        "label": "TOPIC"
+      }
+    ]
+  },
+  {
+    "annotations": [
+      {
+        "beginOffset": 17,
+        "endOffset": 23,
+        "label": "PLACE"
+      },
+      {
+        "beginOffset": 40,
+        "endOffset": 46,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 48,
+        "endOffset": 58,
+        "label": "TOPIC"
+      },
+      {
+        "beginOffset": 64,
+        "endOffset": 71,
+        "label": "TOPIC"
+      }
+    ]
+  }
+]

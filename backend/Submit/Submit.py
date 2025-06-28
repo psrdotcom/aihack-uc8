@@ -30,9 +30,23 @@ async def upload_docx(file: UploadFile = File(...)):
                                 body TEXT,
                                 source TEXT,
                                 published_date TEXT,
-                                entities TEXT,
+                                location_mentions TEXT,
+                                officials_involved TEXT,
+                                relevance_category TEXT,
                                 sentiment TEXT
                             )""")
+        cursor.execute("""
+                        drop table if exists comprehend_jobs
+        """)
+        cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS comprehend_jobs (
+                            article_id TEXT,
+                            input_s3_uri TEXT,
+                            entities_path TEXT,
+                            sentiment_path TEXT,
+                            key_phrases_path TEXT
+                        )
+                        """)
         for article in articles:
             output_csv = io.StringIO()
             writer = csv.DictWriter(output_csv, fieldnames=["Title", "Source", "Date", "Content"])

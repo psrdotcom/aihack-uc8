@@ -5,6 +5,8 @@ import io
 from Utils import get_postgresql_connection
 import datetime
 
+
+
 def lambda_handler(event, context):
     try:
         for record in event['Records']:
@@ -30,35 +32,39 @@ def lambda_handler(event, context):
                         if not file:
                             print(f"File {member.name} not found in tar.")
                             continue
-                        results = json.load(file)
-                        print(f"Extracted JSON: {results}")
+                        result = json.load(file)
+                        print(f"Extracted JSON: {result}")
                         break
-            print(f"Results: {results}")
-            if not results:
+            print(f"Results: {result}")
+            if result:
+                print(f"Results found in the file: {key}")
                 folderSplit = key.split('/')
-                type = folderSplit[0]
+                type = folderSplit[1]
                 cursor = conn.cursor()
                 query = "SELECT * FROM comprehend_jobs WHERE entities_path = %s or sentiment_path = %s or key_phrases_path = %s"
                 cursor.execute(query, (key, key, key))
                 row = cursor.fetchone()
+                print(f"Row found: {row}")
+                print(f"Type of analysis: {type}")
                 if row:
-                    article_id = row['article_id']
-                    for result in results:
-                        if type == 'entities':
-                            entity_array = result['Entities']
-                            if not entity_array:
-                                ## get the entities from the entities table
-                                add_entities_to_article(cursor, article_id, entity_array)
-                        elif type == 'keyphrases':
-                            keyPhrases_array = result['KeyPhrases']
-                            if not keyPhrases_array:
-                                for keyPhrase in keyPhrases_array:
-                                    keyPhrase['Type'] = 'KeyPhrase'
-                                add_entities_to_article(cursor, article_id, keyPhrases_array)
-                        elif type == 'sentiment':
-                            sentiment = result.get('Sentiment', 'NEUTRAL')
-                            if not sentiment:
-                                cursor.execute("""update articles set sentiment = %s where articles_id = %s""", (sentiment, article_id))
+                    article_id = row[0]
+                    print(f"Article ID: {article_id}")
+                    if type == 'entities':
+                        entity_array = result['Entities']
+                        if entity_array:
+                            ## get the entities from the entities table
+                            add_entities_to_article(cursor, article_id, entity_array)
+                    elif type == 'keyphrases':
+                        keyPhrases_array = result['KeyPhrases']
+                        if keyPhrases_array:
+                            for keyPhrase in keyPhrases_array:
+                                keyPhrase['Type'] = 'KeyPhrase'
+                            add_entities_to_article(cursor, article_id, keyPhrases_array)
+                    elif type == 'sentiment':
+                        sentiment = result.get('Sentiment', 'NEUTRAL')
+                        if sentiment:
+                            cursor.execute("""update articles set sentiment = %s where articles_id = %s""", (sentiment, article_id))
+                conn.commit()
                 cursor.close()
                 ## delete the s3 object
                 s3.delete_object(Bucket=bucket, Key=result['input_s3_uri'])
@@ -72,34 +78,30 @@ def lambda_handler(event, context):
 
 def add_entities_to_article(cursor, article_id, entities):
     entities_text = [entity['Text'] for entity in entities]
-    cursor.execute("SELECT * FROM entities WHERE entity in (%s)", (tuple(entities_text),))
+    cursor.execute("SELECT * FROM entities WHERE entity in %s", (tuple(entities_text),))
     entity_db_array = [row[0] for row in cursor.fetchall()]
     location_mentions = []
     officials_involved = []
-    relevance_category = []
+    relevance_category = cursor.execute("SELECT * FROM articles WHERE article_id in %s", (article_id,)).fetchall()
     for entity in entities:
         entity_in_db = [db_entity for db_entity in entity_db_array if db_entity['entity'] == entity['Text']]
         if not entity_in_db:
             current_time = datetime.datetime.utcnow()
             cursor.execute("INSERT INTO entities (create_time,entity,type) VALUES (%s, %s, %s) RETURNING id", (current_time, entity['Text'], entity['Type']))
             db_entity = cursor.fetchone()
-            if entity['Type'] == 'Location':
+            if entity['Type'] == 'LOCATION':
                 location_mentions.append(db_entity[0])
-            elif entity['Type'] == 'Person':
+            elif entity['Type'] == 'PERSON':
                 officials_involved.append(db_entity[0])
-            elif entity['Type'] == 'KeyPhrases':
+            else:
                 relevance_category.append(db_entity[0])
-            else:
-                print(f"Unknown entity type: {entity['Type']}")
         else:
-            if entity['Type'] == 'Location':
+            if entity['Type'] == 'LOCATION':
                 location_mentions.append(entity_in_db[0]['Id'])
-            elif entity['Type'] == 'Person':
+            elif entity['Type'] == 'PERSON':
                 officials_involved.append(entity_in_db[0]['Id'])
-            elif entity['Type'] == 'KeyPhrases':
-                relevance_category.append(entity_in_db[0]['Id'])
             else:
-                print(f"Unknown entity type: {entity['Type']}")
+                relevance_category.append(entity_in_db[0]['Id'])
     if location_mentions:
         location_mentions = ','.join(map(str, location_mentions))
         cursor.execute("""update articles set location_mentions = %s where articles_id = %s""", (location_mentions, article_id))
@@ -111,3 +113,21 @@ def add_entities_to_article(cursor, article_id, entities):
     if relevance_category:
         relevance_category = ','.join(map(str, relevance_category))
         cursor.execute("""update articles set relevance_category = %s where articles_id = %s""", (relevance_category, article_id))
+
+
+events = [
+    {
+        "s3": {
+            "bucket": {
+                "name": "awstraindata"
+            },
+            "object": {
+                "key": "output/entities/269854564686-NER-ec0e8172443cfe1bc633b674b3fd4c44/output/output.tar.gz"
+            }
+        }
+    }
+]
+obj= {
+    "Records": events
+}
+lambda_handler(obj, None)

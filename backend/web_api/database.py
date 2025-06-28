@@ -1,8 +1,12 @@
 # database.py
+import os
 from sqlmodel import create_engine, SQLModel, Session
 
 # Use a real database URL in production
-DATABASE_URL = "postgresql://postgres:!>.VZS<zH-~qXvqs>)91jj5b0aer@ap-ai-hackathon.cluster-cqt08oi8i1b6.us-east-1.rds.amazonaws.com:5432/postgres?sslmode=require"
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    "postgresql://your_user:your_password@your_aurora_endpoint/myappdb"
+).replace("postgresql://", "postgresql+psycopg://")
 
 # The 'connect_args' is needed for SQLite, but not for PostgreSQL.
 # For PostgreSQL, you can remove it.

@@ -14,7 +14,8 @@ from contextlib import asynccontextmanager, closing
 
 # from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field
-from psycopg2 import connect, ProgrammingError
+from psycopg import connect, ProgrammingError
+from contextlib import closing
 from mangum import Mangum
 
 # # Import our new Bedrock agent function
@@ -115,14 +116,11 @@ class NaturalLanguageQuery(BaseModel):
 
 # --- Database Connection ---
 # IMPORTANT: Use a read-only user for the database connection.
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://your_user:your_password@your_aurora_endpoint/myappdb")
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://your_user:your_password@your_aurora_endpoint/myappdb").replace("postgresql://", "postgresql+psycopg://")
 
 def get_db_connection():
-    conn = connect(DATABASE_URL)
-    try:
+    with connect(DATABASE_URL) as conn:
         yield conn
-    finally:
-        conn.close()
 
 app = FastAPI(
     title="FastAPI with Bedrock Agents"
@@ -161,7 +159,7 @@ def query_with_bedrock_agent(query: NaturalLanguageQuery, conn=Depends(get_db_co
 
     # 3. Execute the SQL from the agent
     try:
-        with closing(conn.cursor()) as cur:
+        with conn.cursor() as cur:
             cur.execute(generated_sql)
             if cur.description is None:
                 return []

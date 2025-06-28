@@ -47,5 +47,6 @@ def is_relevance(article):
                     print("❌ No JSON found in response")
     except Exception as e:
         print("Error processing response:", e)
-        traceback.print_exc()
+        pass
+        # traceback.print_exc()
     return is_relevant

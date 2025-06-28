@@ -20,22 +20,33 @@ def get_or_create_api(api_name):
     response = apigateway.create_rest_api(name=api_name)
     return response["id"]
 
-def get_or_create_resource(api_id, resource_path):
+def get_or_create_resource(api_id, full_path):
+    # Normalize and split nested path: "users/{userId}" => ["users", "{userId}"]
+    parts = [p for p in full_path.strip("/").split("/") if p]
     resources = apigateway.get_resources(restApiId=api_id)["items"]
-    root_id = next(item["id"] for item in resources if item["path"] == "/")
 
-    for res in resources:
-        if res["path"] == f"/{resource_path}":
-            print(f"Found resource: /{resource_path}")
-            return res["id"]
+    # Build a path-to-id map
+    path_map = {res["path"]: res["id"] for res in resources}
+    parent_path = ""
+    parent_id = path_map["/"]  # root path
 
-    print(f"Creating resource: /{resource_path}")
-    response = apigateway.create_resource(
-        restApiId=api_id,
-        parentId=root_id,
-        pathPart=resource_path
-    )
-    return response["id"]
+    for part in parts:
+        current_path = f"{parent_path}/{part}" if parent_path else f"/{part}"
+        if current_path in path_map:
+            parent_id = path_map[current_path]
+        else:
+            print(f"Creating resource: {current_path}")
+            response = apigateway.create_resource(
+                restApiId=api_id,
+                parentId=parent_id,
+                pathPart=part
+            )
+            parent_id = response["id"]
+            path_map[current_path] = parent_id
+        parent_path = current_path
+
+    return parent_id
+
 
 def method_exists(api_id, resource_id, http_method):
     try:

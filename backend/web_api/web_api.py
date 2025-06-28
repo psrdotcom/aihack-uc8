@@ -21,7 +21,7 @@ from mangum import Mangum
 
 # # Import our new Bedrock agent function
 # from bedrock_agent import generate_sql_from_prompt
-
+# namasthe
 # Import our new agent invoker function
 from backend.web_api.bedrock_agent_invoke import invoke_bedrock_agent_to_get_sql
 

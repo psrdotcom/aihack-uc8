@@ -6,8 +6,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-publish:
+  build-and-publish-layer:
     runs-on: ubuntu-latest
+
+    env:
+      LAYER_NAME: my-python-layer
+      PYTHON_VERSION: python3.11
+      S3_KEY: layers/layer.zip
 
     steps:
       - name: Checkout code
@@ -16,12 +21,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # match your Lambda runtime
+          python-version: '3.11'
 
       - name: Install dependencies to python/
         run: |
           mkdir -p python
           pip install -r backend/requirements.txt -t python/
+
+      - name: Clean up unnecessary files
+        run: |
+          find python/ -type d -name "__pycache__" -exec rm -rf {} +
+          find python/ -type d -name "tests" -exec rm -rf {} +
+          find python/ -type f -name "*.pyc" -delete
 
       - name: Zip the layer
         run: zip -r layer.zip python
@@ -29,22 +40,23 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: AKIAT5VEV4FHFQQJBZVX
-          aws-secret-access-key: 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
-          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Publish Lambda Layer
+      - name: Upload zip to S3
         run: |
-          LAYER_NAME="my-python-layer"
-          RUNTIME="python3.11"
+          aws s3 cp layer.zip s3://hackathon-lambda-ap-ai-cyberark/${{ env.S3_KEY }}
 
+      - name: Publish Lambda Layer from S3
+        run: |
           aws lambda publish-layer-version \
-            --layer-name "$LAYER_NAME" \
+            --layer-name ${{ env.LAYER_NAME }} \
             --description "Dependencies from backend/requirements.txt" \
-            --zip-file fileb://layer.zip \
-            --compatible-runtimes "$RUNTIME"
+            --content S3Bucket=hackathon-lambda-ap-ai-cyberark,S3Key=${{ env.S3_KEY }} \
+            --compatible-runtimes ${{ env.PYTHON_VERSION }}
 
-      - name: Upload artifact
+      - name: Upload artifact (optional)
         uses: actions/upload-artifact@v4
         with:
           name: lambda-layer

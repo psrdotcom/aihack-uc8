@@ -1,5 +1,5 @@
 import base64
-from json import decoder
+from requests_toolbelt.multipart import decoder
 import uuid
 from Utils import get_postgresql_connection
 from fastapi import FastAPI, UploadFile, File
@@ -48,7 +48,7 @@ def lambda_handler(event, context):
                 writer.writerow(article)
                 article_id = str(uuid.uuid4())
                 # Generate unique filename
-                csv_filename = f"/input/articles-{article_id}.csv"
+                csv_filename = f"input/articles-{article_id}.csv"
                 cursor.execute("""
                         INSERT INTO articles (article_id, title, body, source, published_date)
                         VALUES (%s, %s, %s, %s, %s)""", (article_id, article[0], article[1], article[2], article[3]))
@@ -60,9 +60,12 @@ def lambda_handler(event, context):
                     Body=output_csv.getvalue(),
                     ContentType='text/csv'
                 )
+                conn.commit() 
                 print(f"Uploaded CSV to S3: {csv_filename}")
                 s3_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{csv_filename}"
                 s3_urls.append(s3_url)
+        cursor.close()
+        conn.close()
         return {"statusCode": 200, "status": "success", "count": len(articles), "data": articles, "s3_urls": s3_urls}
     except Exception as e:
         return {"statusCode": 500, "body": f"❌ Error: {str(e)}"}

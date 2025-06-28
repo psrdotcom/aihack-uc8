@@ -9,3 +9,4 @@ psycopg[binary]
 psycopg-pool
 pydantic
 python-dotenv
+requests-toolbelt

@@ -33,7 +33,7 @@ def lambda_handler(event, context):
                 print(f"Processing article: {article['Title']}")
                 output_csv = io.StringIO()
                 writer = csv.DictWriter(output_csv, fieldnames=["Title", "Source", "Date", "Content"])
-                writer.writeheader()
+                # writer.writeheader()
                 writer.writerow(article)
                 article_id = str(uuid.uuid4())
                 # Generate unique filename

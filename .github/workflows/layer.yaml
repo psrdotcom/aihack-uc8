@@ -3,8 +3,7 @@ name: Build Lambda Layer
 on:
   push:
     branches: [main, automation]
-    paths:
-      - backend/requirements.txt
+  workflow_dispatch:
 
 jobs:
   build-layer:

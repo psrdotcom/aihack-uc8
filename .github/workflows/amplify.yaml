@@ -26,6 +26,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip boto3
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: AKIAT5VEV4FHFQQJBZVX
+          aws-secret-access-key: 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
+          aws-region: us-east-1
 
       - name: Set Env Variales
         run: |
@@ -38,13 +45,6 @@ jobs:
           # GITHUB_PAT=$(echo "$GITHUB_PAT" | jq -r .github_pat)
 
           echo "GITHUB_PAT=$GITHUB_PAT" >> $GITHUB_ENV
-          
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: AKIAT5VEV4FHFQQJBZVX
-          aws-secret-access-key: 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
-          aws-region: us-east-1
 
       - name: Run Amplify Deployment Script
         run: |

@@ -19,7 +19,10 @@ def lambda_handler(event, context):
     try:
         # Decode base64-encoded body (API Gateway encodes binary automatically)
         print(f"Received event")
-        body = base64.b64decode(event['body'])
+        if event.get("isBase64Encoded", False):
+            body = base64.b64decode(event['body'])
+        else:
+            body = event['body'].encode("utf-8")
         print(f"Decoded body length: {len(body)} bytes")
         # Get content-type header
         content_type = event['headers'].get('Content-Type') or event['headers'].get('content-type')

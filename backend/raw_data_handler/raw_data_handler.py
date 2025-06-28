@@ -51,14 +51,14 @@ def lambda_handler(event, context):
                 #     ContentType='text/csv'
                 # )
                 conn.commit() 
-                get_data_inline(output_csv.getvalue(), article_id, comprehend, role, cursor, conn)
+                get_data_inline(output_csv.getvalue(), article_id, article['Date'], comprehend, cursor, conn)
         cursor.close()
         conn.close()
     except Exception as e:
         traceback.print_exc()
         print(f"Error processing event: {e}")
 
-def get_data_inline(data, articles_id, comprehend, role_arn, cursor, conn):
+def get_data_inline(data, articles_id, article_date, comprehend, cursor, conn):
     print(f"Processing data for article ID: {articles_id}")
     entities_response = comprehend.detect_entities(
                 Text=data,
@@ -75,7 +75,7 @@ def get_data_inline(data, articles_id, comprehend, role_arn, cursor, conn):
     print(f"Key phrases detected: {response['KeyPhrases']}")
     for keyPhrase in response['KeyPhrases']:
         keyPhrase['Type'] = 'KeyPhrase'
-    add_keyphrase_to_article(conn, cursor, articles_id, response['KeyPhrases'])
+    add_keyphrase_to_article(conn, cursor, articles_id, article_date, response['KeyPhrases'])
     sentiment_response = comprehend.detect_sentiment(
                 Text=data,
                 # DataAccessRoleArn=role_arn,
@@ -115,7 +115,7 @@ def extract_articles(file_stream):
     return articles
 
 
-def add_keyphrase_to_article(conn, cursor, article_id, entities):
+def add_keyphrase_to_article(conn, cursor, article_id, article_date, entities):
     entities_text = [entity['Text'] for entity in entities]
     print(f"Entities to be added: {entities_text}")
     cursor.execute("SELECT * FROM keyphrases WHERE phrases in %s", (tuple(entities_text),))
@@ -129,13 +129,18 @@ def add_keyphrase_to_article(conn, cursor, article_id, entities):
         print(f"Entity in DB: {entity_in_db}")
         if not entity_in_db:
             current_time = datetime.datetime.utcnow()
-            cursor.execute("INSERT INTO keyphrases (create_time,phrases,type) VALUES (%s, %s, %s) RETURNING id", (current_time, entity['Text'], entity['Type']))
+            cursor.execute("INSERT INTO keyphrases (start_datetime,phrases) VALUES (%s, %s) RETURNING id", (article_date, entity['Text']))
             conn.commit()
             db_entity = cursor.fetchone()
             print(f"Inserted new entity: {db_entity}")
             relevance_category.append(db_entity[0])
         else:
             print(f"Entity already exists in DB: {entity_in_db}")
+            cursor.execute("""UPDATE keyphrases SET linkedtimelines = 
+        CASE 
+            WHEN linkedtimelines IS NULL OR linkedtimelines = '' THEN %s
+            ELSE linkedtimelines || ', ' || %s
+        END WHERE id = %s""", (article_date, article_date, entity_in_db[0][0]))
             relevance_category.append(entity_in_db[0][0])
     if relevance_category:
         relevance_category = ','.join(map(str, relevance_category))

@@ -14,7 +14,7 @@ s3 = boto3.client('s3')
 BUCKET_NAME = 'awstraindata'
 
 @app.post("/upload/")
-async def upload_docx(file: UploadFile = File(...)):
+async def lambda_handler(file: UploadFile = File(...)):
     if not file.filename.endswith(".docx"):
         return JSONResponse(status_code=400, content={"error": "Only .docx files are supported"})
 

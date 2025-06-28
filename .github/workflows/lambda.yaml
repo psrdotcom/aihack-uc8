@@ -83,6 +83,6 @@ jobs:
                 --code S3Bucket="$DEPLOY_BUCKET",S3Key="${function_name}.zip" \
                 --timeout 900 \
                 --vpc-config SubnetIds=subnet-02e62e34308bb07d5,subnet-0534b99dd34e646f1,SecurityGroupIds=sg-0b9a6b812b30a1107 \
-                --layers "arn:aws:lambda:us-east-1:269854564686:layer:my-python-layer:3"  # 🔁 Replace with your actual layer ARN
+                --layers "arn:aws:lambda:us-east-1:269854564686:layer:my-python-layer:4"  # 🔁 Replace with your actual layer ARN
             fi
           done

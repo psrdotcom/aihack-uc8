@@ -2,8 +2,7 @@ import base64
 from requests_toolbelt.multipart import decoder
 import uuid
 from Utils import get_postgresql_connection
-from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from docx import Document
 import csv
 import io

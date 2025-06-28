@@ -2,8 +2,8 @@ name: Deploy Lambdas
 
 on:
   push:
-    branches: [main, backend_changes]
-  workflow_dispatch:
+    paths:
+      - 'backend/*'
 
 env:
   LAMBDA_DIR: backend

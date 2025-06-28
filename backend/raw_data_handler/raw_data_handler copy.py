@@ -43,20 +43,19 @@ def lambda_handler(event, context):
                         VALUES (%s, %s, %s, %s, %s)""", (article_id, article['Title'], article['Content'], article['Source'], article['Date']))
                 # Upload to S3
                 print(f"Uploading CSV to S3: {csv_filename}")
-                # s3.put_object(
-                #     Bucket=BUCKET_NAME,
-                #     Key=csv_filename,
-                #     Body=output_csv.getvalue(),
-                #     ContentType='text/csv'
-                # )
+                s3.put_object(
+                    Bucket=BUCKET_NAME,
+                    Key=csv_filename,
+                    Body=output_csv.getvalue(),
+                    ContentType='text/csv'
+                )
                 conn.commit() 
-                get_data_inline(output_csv.getvalue(), article_id, comprehend, role, cursor, conn)
+                start_jobs(f's3://{BUCKET_NAME}/{csv_filename}', article_id, comprehend, role, cursor, conn)
         cursor.close()
         conn.close()
     except Exception as e:
         traceback.print_exc()
         print(f"Error processing event: {e}")
-
 def get_data_inline(data, articles_id, comprehend, role_arn, cursor, conn):
     entities_response = comprehend.detect_entities(
                 Text=data['Content'],
@@ -64,22 +63,56 @@ def get_data_inline(data, articles_id, comprehend, role_arn, cursor, conn):
                 LanguageCode='en'
             )
     add_entities_to_article(conn, cursor, articles_id, entities_response['Entities'])
-    response = comprehend.detect_key_phrases(
-            Text=data['Content'],
-            DataAccessRoleArn=role_arn,
-            LanguageCode='en'
-        )
-    for keyPhrase in response['KeyPhrases']:
-        keyPhrase['Type'] = 'KeyPhrase'
-    add_entities_to_article(conn, cursor, articles_id, response['KeyPhrases'])
-    sentiment_response = comprehend.detect_sentiment(
-                Text=data['Content'],
+    for entity in entities_response['Entities']:
+        print(f"Found entity: {entity['Text']} (Type: {entity['Type']})")
+
+def start_jobs(s3_uri, articles_id, comprehend, role_arn, cursor, conn):
+    print(f"Starting jobs for article ID: {articles_id}")
+    entities_job = comprehend.start_entities_detection_job(
+                InputDataConfig={'S3Uri': s3_uri, 'InputFormat': 'ONE_DOC_PER_LINE'},
+                OutputDataConfig={'S3Uri': 's3://awstraindata/output/entities/'},
                 DataAccessRoleArn=role_arn,
-                LanguageCode='en'
+                LanguageCode='en',
+                JobName='MyEntityDetectionJob_'+ articles_id + '_' + str(int(time.time()))
+            )
+    print(f"Entities job started: {entities_job['JobId']}")
+    result = comprehend.describe_entities_detection_job(JobId=entities_job['JobId'])
+    print(f"Entities job description: {result}")
+    entities_output = result['EntitiesDetectionJobProperties']['OutputDataConfig']['S3Uri']
+
+    # SENTIMENT detection job
+    sentiment_job = comprehend.start_sentiment_detection_job(
+        InputDataConfig={'S3Uri': s3_uri, 'InputFormat': 'ONE_DOC_PER_LINE'},
+        OutputDataConfig={'S3Uri': 's3://awstraindata/output/sentiment/'},
+        DataAccessRoleArn=role_arn,
+        LanguageCode='en',
+        JobName='MySentimentDetectionJob_' + articles_id + '_' + str(int(time.time()))
     )
-    sentiment = sentiment_response['Sentiment']
-    if sentiment:
-        cursor.execute("""update articles set sentiment = %s where article_id = %s""", (sentiment, articles_id))
+    print(f"Sentiment job started: {sentiment_job['JobId']}")
+    res = comprehend.describe_sentiment_detection_job(JobId=sentiment_job['JobId'])
+    print(f"Sentiment job description: {res}")
+    sentiment_output = res['SentimentDetectionJobProperties']['OutputDataConfig']['S3Uri']
+
+    # KEY PHRASES detection job
+    phrases_job = comprehend.start_key_phrases_detection_job(
+        InputDataConfig={'S3Uri': s3_uri, 'InputFormat': 'ONE_DOC_PER_LINE'},
+        OutputDataConfig={'S3Uri': 's3://awstraindata/output/keyphrases/'},
+        DataAccessRoleArn=role_arn,
+        LanguageCode='en',
+        JobName='MyKeyPhrasesDetectionJob_' + articles_id + '_' + str(int(time.time()))
+    )
+    print(f"Key Phrases job started: {phrases_job['JobId']}")
+    res = comprehend.describe_key_phrases_detection_job(JobId=phrases_job['JobId'])
+    print(f"Key Phrases job description: {res}")
+    key_phrases_output = res['KeyPhrasesDetectionJobProperties']['OutputDataConfig']['S3Uri']
+    print("Entities Job Response:", entities_output)
+    print("Sentiment Job Response:", sentiment_output)
+    print("Key Phrases Job Response:", key_phrases_output)
+    print("Inserting into comprehend_jobs table")
+    cursor.execute("""
+        INSERT INTO comprehend_jobs (article_id, input_s3_uri, entities_path, sentiment_path, key_phrases_path)
+        VALUES (%s, %s, %s, %s, %s)""", (articles_id, s3_uri, entities_output.replace('s3://awstraindata/', ''), sentiment_output.replace('s3://awstraindata/', ''), key_phrases_output.replace('s3://awstraindata/', '')))
+    conn.commit()
 
 def extract_articles(file_stream):
     print(f"Extracting articles from file stream")

@@ -1,6 +1,7 @@
 import boto3
 import sys
 import time
+import os
 
 GITHUB_PAT = os.getenv("GITHUB_PAT")
 if not GITHUB_PAT:

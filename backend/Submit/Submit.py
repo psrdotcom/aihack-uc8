@@ -91,5 +91,10 @@ def extract_articles(file_stream):
         date = date_parts[0].strip()
         content = date_parts[1].strip() if len(date_parts) > 1 else ""
         print(f"Extracted article - Title: {title}, Source: {source}, Date: {date}, Content length: {len(content)}")
-        articles.append([title, source, date, content])
+        articles.append({
+            "Title": title,
+            "Source": source,
+            "Date": date,
+            "Content": content
+            })
     return articles

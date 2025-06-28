@@ -15,13 +15,21 @@ app_name = f"amplify-{repo_name}"
 client = boto3.client('amplify','us-east-1')
 print(GITHUB_PAT)
 
+custom_rewrite_rules = [
+    {
+        'source': '/<*>',
+        'target': '/index.html',
+        'status': '404-200'
+    }
+]
 # Create Amplify App
 app_response = client.create_app(
     name=app_name,
     repository=f"https://github.com/{repo_owner}/{repo_name}",
     oauthToken=GITHUB_PAT,
     platform='WEB',
-    enableBranchAutoBuild=True
+    enableBranchAutoBuild=True,
+    customRules=custom_rewrite_rules
 )
 app_id = app_response['app']['appId']
 print(f"[✓] Created Amplify app with ID: {app_id}")

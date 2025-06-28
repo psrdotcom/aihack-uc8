@@ -20,7 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.12'
 
       - name: Install AWS CLI
         run: pip install awscli
@@ -32,19 +32,19 @@ jobs:
           aws-secret-access-key: o56LCVEDcTPD8RgU2iWtz8SBklKa5DqQ6+nCYawf
           aws-region: us-east-1
 
-      - name: Deploy Lambda Functions
+      - name: Deploy Lambda Functions (No dependencies)
         run: |
           for dir in "$LAMBDA_DIR"/*/; do
-            dir=${dir%/}  # remove trailing slash
+            dir=${dir%/}
             function_name=$(basename "$dir")
             entry_point="$dir/${function_name}.py"
 
             if [ ! -f "$entry_point" ]; then
-              echo "Skipping $function_name: Entry point $entry_point not found."
+              echo "Skipping $function_name: $entry_point not found."
               continue
             fi
 
-            echo "Packaging Lambda function: $function_name"
+            echo "Packaging Lambda: $function_name"
 
             build_dir="/tmp/${function_name}_build"
             zip_file="/tmp/${function_name}.zip"
@@ -52,38 +52,29 @@ jobs:
             rm -rf "$build_dir"
             mkdir -p "$build_dir"
 
-            # Copy the Lambda's main .py file
+            # Copy Lambda source file
             cp "$entry_point" "$build_dir/"
 
-            # ✅ Copy all top-level files in backend (excluding subfolders)
-            find "$LAMBDA_DIR" -maxdepth 1 -type f -exec cp {} "$build_dir/" \;
+            # Copy all top-level shared files from backend (excluding directories and requirements.txt)
+            find "$LAMBDA_DIR" -maxdepth 1 -type f ! -name "requirements.txt" -exec cp {} "$build_dir/" \;
 
-            # Remove requirements.txt from build_dir (only needed for pip install)
-            rm -f "$build_dir/requirements.txt"
-
-            # Install dependencies into build_dir
-            if [ -f "$LAMBDA_DIR/requirements.txt" ]; then
-              pip install --no-cache-dir -r "$LAMBDA_DIR/requirements.txt" -t "$build_dir"
-            fi
-
-            # Create ZIP
+            # Zip build directory
             cd "$build_dir"
             zip -r "$zip_file" . > /dev/null
             cd -
 
-            # Upload to S3
+            # Upload zip to S3
             aws s3 cp "$zip_file" "s3://${DEPLOY_BUCKET}/${function_name}.zip"
 
-            # Check if function exists
+            # Deploy Lambda
             if aws lambda get-function --function-name "$function_name" > /dev/null 2>&1; then
-              echo "Updating Lambda function: $function_name"
+              echo "Updating Lambda: $function_name"
               aws lambda update-function-code \
                 --function-name "$function_name" \
                 --s3-bucket "$DEPLOY_BUCKET" \
-                --s3-key "${function_name}.zip" \
-                --layers "arn:aws:lambda:us-east-1:269854564686:layer:my-python-layer:2"
+                --s3-key "${function_name}.zip"
             else
-              echo "Creating Lambda function: $function_name"
+              echo "Creating Lambda: $function_name"
               aws lambda create-function \
                 --function-name "$function_name" \
                 --runtime python3.12 \
@@ -92,6 +83,6 @@ jobs:
                 --code S3Bucket="$DEPLOY_BUCKET",S3Key="${function_name}.zip" \
                 --timeout 900 \
                 --vpc-config SubnetIds=subnet-02e62e34308bb07d5,subnet-0534b99dd34e646f1,SecurityGroupIds=sg-0b9a6b812b30a1107 \
-                --layers "arn:aws:lambda:us-east-1:269854564686:layer:my-python-layer:2"
+                --layers "arn:aws:lambda:us-east-1:269854564686:layer:my-python-layer:3"  # 🔁 Replace with your actual layer ARN
             fi
           done

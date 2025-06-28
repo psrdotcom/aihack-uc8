@@ -1,0 +1,10 @@
+{
+  "apiName": "hackathon",
+  "resourcePath": "articles",
+  "method": {
+    "httpMethod": "GET",
+    "authorizationType": "NONE",
+    "lambdaFunctionName": "web_api"
+  },
+  "deploy": true
+}

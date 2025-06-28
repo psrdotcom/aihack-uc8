@@ -14,8 +14,8 @@ from contextlib import asynccontextmanager, closing
 
 # from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field
-from psycopg import ProgrammingError
-from psycopg_pool import ConnectionPool
+from psycopg2 import ProgrammingError
+import psycopg2
 from contextlib import closing
 from mangum import Mangum
 
@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
     print("Application startup...")
     yield
     print("Application shutdown...")
-    pool.close()
+    # pool.close()
 
 
 # This event handler runs once when the application starts.
@@ -123,11 +123,12 @@ class NaturalLanguageQuery(BaseModel):
 # IMPORTANT: Use a read-only user for the database connection.
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://your_user:your_password@your_aurora_endpoint/myappdb")
 
-pool = ConnectionPool(conninfo=DATABASE_URL)
-
 def get_db_connection():
-    with pool.connection() as conn:
+    conn = psycopg2.connect(DATABASE_URL)
+    try:
         yield conn
+    finally:
+        conn.close()
 
 @app.post("/query/agent", response_model=List[Dict[str, Any]])
 def query_with_bedrock_agent(query: NaturalLanguageQuery, conn=Depends(get_db_connection)):

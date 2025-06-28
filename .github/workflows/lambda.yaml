@@ -1,0 +1,83 @@
+name: Deploy Lambdas
+
+on:
+  push:
+    branches: [main, backend_changes]
+  workflow_dispatch:
+
+env:
+  LAMBDA_DIR: backend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install AWS CLI
+        run: pip install awscli
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: AKIAT5VEV4FHFQQJBZVX
+          aws-secret-access-key: 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
+          aws-region: us-east-1  # Change this if needed
+
+      - name: Deploy Python Lambda Files with Dependencies
+        run: |
+          for file in $LAMBDA_DIR/*.py; do
+            filename=$(basename -- "$file")
+            function_name="${filename%.*}"
+            build_dir="/tmp/${function_name}_build"
+            zip_file="/tmp/${function_name}.zip"
+
+            echo "Creating build directory at $build_dir"
+            rm -rf "$build_dir"
+            mkdir -p "$build_dir"
+
+            echo "Copying $file to $build_dir"
+            cp "$file" "$build_dir/"
+
+            if [ -f "$LAMBDA_DIR/requirements.txt" ]; then
+              echo "Installing dependencies from requirements.txt"
+              pip install -r "$LAMBDA_DIR/requirements.txt" -t "$build_dir"
+            fi
+
+            echo "Zipping contents into $zip_file"
+            cd "$build_dir"
+            zip -r "$zip_file" . > /dev/null
+            cd -
+
+            echo "Checking if function $function_name exists..."
+            if aws lambda get-function --function-name "$function_name" > /dev/null 2>&1; then
+              echo "Function exists. Updating code..."
+              aws s3 cp "$zip_file" "s3://$DEPLOY_BUCKET/$function_name.zip"
+
+              aws lambda update-function-code \
+                --function-name "$function_name" \
+                --s3-bucket "hackathon-lambda-ap-ai-cyberark" \
+                --s3-key "$function_name.zip"
+
+            else
+              echo "Function does not exist. Creating..."
+              aws s3 cp "$zip_file" "s3://hackathon-lambda-ap-ai-cyberark/$function_name.zip"
+
+              aws lambda create-function \
+                --function-name "$function_name" \
+                --runtime python3.12 \
+                --role "arn:aws:iam::269854564686:role/hackathon-lambda-role" \
+                --handler "${function_name}.lambda_handler" \
+                --code S3Bucket="hackathon-lambda-ap-ai-cyberark",S3Key="$function_name.zip" \
+                --timeout 900 \
+                --vpc-config SubnetIds=subnet-02e62e34308bb07d5,subnet-0534b99dd34e646f1,SecurityGroupIds=sg-0b9a6b812b30a1107
+
+            fi
+          done

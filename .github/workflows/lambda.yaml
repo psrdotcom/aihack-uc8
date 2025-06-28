@@ -34,13 +34,13 @@ jobs:
 
       - name: Deploy Lambda Functions
         run: |
-          for dir in $LAMBDA_DIR/*/; do
-            dir=${dir%*/}  # remove trailing slash
+          for dir in "$LAMBDA_DIR"/*/; do
+            dir=${dir%/}  # remove trailing slash
             function_name=$(basename "$dir")
             entry_point="$dir/${function_name}.py"
 
             if [ ! -f "$entry_point" ]; then
-              echo "Skipping $function_name: $entry_point not found"
+              echo "Skipping $function_name: Entry point $entry_point not found."
               continue
             fi
 
@@ -52,46 +52,27 @@ jobs:
             rm -rf "$build_dir"
             mkdir -p "$build_dir"
 
-            # Copy main lambda file
+            # Copy the Lambda's main .py file
             cp "$entry_point" "$build_dir/"
 
-            # Copy shared utils
-            for dir in $LAMBDA_DIR/*/; do
-              dir=${dir%*/}
-              function_name=$(basename "$dir")
-              entry_point="$dir/${function_name}.py"
+            # ✅ Copy all top-level files in backend (excluding subfolders)
+            find "$LAMBDA_DIR" -maxdepth 1 -type f -exec cp {} "$build_dir/" \;
 
-              if [ ! -f "$entry_point" ]; then
-                echo "Skipping $function_name: $entry_point not found"
-                continue
-              fi
+            # Remove requirements.txt from build_dir (only needed for pip install)
+            rm -f "$build_dir/requirements.txt"
 
-              echo "Packaging Lambda function: $function_name"
+            # Install dependencies into build_dir
+            if [ -f "$LAMBDA_DIR/requirements.txt" ]; then
+              pip install --no-cache-dir -r "$LAMBDA_DIR/requirements.txt" -t "$build_dir"
+            fi
 
-              build_dir="/tmp/${function_name}_build"
-              zip_file="/tmp/${function_name}.zip"
-
-              rm -rf "$build_dir"
-              mkdir -p "$build_dir"
-
-              # Copy main lambda code
-              cp "$entry_point" "$build_dir/"
-
-              # ✅ Copy all top-level files in backend/ (excluding folders)
-              find "$LAMBDA_DIR" -maxdepth 1 -type f -exec cp {} "$build_dir/" \;
-
-              # Install dependencies
-              if [ -f "$LAMBDA_DIR/requirements.txt" ]; then
-                pip install -r "$LAMBDA_DIR/requirements.txt" -t "$build_dir"
-              fi
-            
-            # Zip everything
+            # Create ZIP
             cd "$build_dir"
             zip -r "$zip_file" . > /dev/null
             cd -
 
             # Upload to S3
-            aws s3 cp "$zip_file" "s3://$DEPLOY_BUCKET/${function_name}.zip"
+            aws s3 cp "$zip_file" "s3://${DEPLOY_BUCKET}/${function_name}.zip"
 
             # Check if function exists
             if aws lambda get-function --function-name "$function_name" > /dev/null 2>&1; then

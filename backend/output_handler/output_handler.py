@@ -63,11 +63,11 @@ def lambda_handler(event, context):
                     elif type == 'sentiment':
                         sentiment = result.get('Sentiment', 'NEUTRAL')
                         if sentiment:
-                            cursor.execute("""update articles set sentiment = %s where articles_id = %s""", (sentiment, article_id))
+                            cursor.execute("""update articles set sentiment = %s where article_id = %s""", (sentiment, article_id))
                 conn.commit()
                 cursor.close()
                 ## delete the s3 object
-                s3.delete_object(Bucket=bucket, Key=result['input_s3_uri'])
+                # s3.delete_object(Bucket=bucket, Key=result['input_s3_uri'])
                 conn.close()
     except Exception as e:
         print(f"Error processing record: {e}")
@@ -78,17 +78,25 @@ def lambda_handler(event, context):
 
 def add_entities_to_article(cursor, article_id, entities):
     entities_text = [entity['Text'] for entity in entities]
+    print(f"Entities to be added: {entities_text}")
     cursor.execute("SELECT * FROM entities WHERE entity in %s", (tuple(entities_text),))
-    entity_db_array = [row[0] for row in cursor.fetchall()]
+    entity_db_array = cursor.fetchall()
+    print(f"Entities in DB: {entity_db_array}")
     location_mentions = []
     officials_involved = []
-    relevance_category = cursor.execute("SELECT * FROM articles WHERE article_id in %s", (article_id,)).fetchall()
+    relevance_category = []
+    print(f"article_id: {article_id}")
+    
+    print(f"Relevance category: {relevance_category}")
     for entity in entities:
-        entity_in_db = [db_entity for db_entity in entity_db_array if db_entity['entity'] == entity['Text']]
+        print(f"Processing entity: {entity}")
+        entity_in_db = [db_entity for db_entity in entity_db_array if db_entity[3] == entity['Text']]
+        print(f"Entity in DB: {entity_in_db}")
         if not entity_in_db:
             current_time = datetime.datetime.utcnow()
             cursor.execute("INSERT INTO entities (create_time,entity,type) VALUES (%s, %s, %s) RETURNING id", (current_time, entity['Text'], entity['Type']))
             db_entity = cursor.fetchone()
+            print(f"Inserted new entity: {db_entity}")
             if entity['Type'] == 'LOCATION':
                 location_mentions.append(db_entity[0])
             elif entity['Type'] == 'PERSON':
@@ -96,38 +104,44 @@ def add_entities_to_article(cursor, article_id, entities):
             else:
                 relevance_category.append(db_entity[0])
         else:
+            print(f"Entity already exists in DB: {entity_in_db}")
             if entity['Type'] == 'LOCATION':
-                location_mentions.append(entity_in_db[0]['Id'])
+                location_mentions.append(entity_in_db[0][0])
             elif entity['Type'] == 'PERSON':
-                officials_involved.append(entity_in_db[0]['Id'])
+                officials_involved.append(entity_in_db[0][0])
             else:
-                relevance_category.append(entity_in_db[0]['Id'])
+                relevance_category.append(entity_in_db[0][0])
     if location_mentions:
         location_mentions = ','.join(map(str, location_mentions))
-        cursor.execute("""update articles set location_mentions = %s where articles_id = %s""", (location_mentions, article_id))
+        cursor.execute("""update articles set location_mentions = %s where article_id = %s""", (location_mentions, article_id))
 
     if officials_involved:
         officials_involved = ','.join(map(str, officials_involved))
-        cursor.execute("""update articles set officials_involved = %s where articles_id = %s""", (officials_involved, article_id))
+        cursor.execute("""update articles set officials_involved = %s where article_id = %s""", (officials_involved, article_id))
 
     if relevance_category:
+        cursor.execute("SELECT relevance_category FROM articles WHERE article_id = %s", (article_id,))
+        existing = cursor.fetchone()
         relevance_category = ','.join(map(str, relevance_category))
-        cursor.execute("""update articles set relevance_category = %s where articles_id = %s""", (relevance_category, article_id))
+        if existing[0] is not None:
+            print(f"Existing relevance category: {existing[0]}")
+            relevance_category = relevance_category + ',' + existing[0]
+        cursor.execute("""update articles set relevance_category = %s where article_id = %s""", (relevance_category, article_id))
 
 
-events = [
-    {
-        "s3": {
-            "bucket": {
-                "name": "awstraindata"
-            },
-            "object": {
-                "key": "output/entities/269854564686-NER-ec0e8172443cfe1bc633b674b3fd4c44/output/output.tar.gz"
-            }
-        }
-    }
-]
-obj= {
-    "Records": events
-}
-lambda_handler(obj, None)
+# events = [
+#     {
+#         "s3": {
+#             "bucket": {
+#                 "name": "awstraindata"
+#             },
+#             "object": {
+#                 "key": "output/entities/269854564686-NER-7b5218ec8e556761890504a59e10da02/output/output.tar.gz"
+#             }
+#         }
+#     }
+# ]
+# obj= {
+#     "Records": events
+# }
+# lambda_handler(obj, None)

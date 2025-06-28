@@ -19,7 +19,7 @@ conn = get_postgresql_connection()
 cursor = conn.cursor()
 cursor.execute("drop table if exists articles")
 cursor.execute("""CREATE TABLE IF NOT EXISTS articles (
-                        articles_id TEXT,
+                        article_id TEXT,
                         title TEXT,
                         body TEXT,
                         source TEXT,

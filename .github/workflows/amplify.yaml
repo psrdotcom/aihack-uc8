@@ -32,6 +32,6 @@ jobs:
           AWS_ACCESS_KEY_ID: AKIAT5VEV4FHFQQJBZVX
           AWS_SECRET_ACCESS_KEY: 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
           AWS_DEFAULT_REGION: 'us-east-1'  # change if needed
-          GITHUB_PAT: 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
+          GITHUB_PAT: "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"
         run: |
           python amplify.py "${{ github.event.inputs.repo }}" "${{ github.event.inputs.branch }}"

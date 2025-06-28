@@ -8,4 +8,4 @@ pydantic
 python-dotenv
 requests-toolbelt
 sqlmodel
-psycopg2
+psycopg[binary]

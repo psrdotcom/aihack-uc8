@@ -73,7 +73,7 @@ export default function SubDataTable<TData>({ row }: SubDataTableProps<TData>) {
                                 <div>{article.description}</div>
                             </TableCell>
                             <TableCell>
-                                <table className="min-w-[200px] text-xs w-full rounded p-4">
+                                <table className="min-w-[200px] text-xs w-full rounded">
                                     <tbody>
                                         <tr className="odd:bg-gray-100/60 dark:odd:bg-white/10">
                                             <td className="font-semibold px-2 py-1 text-gray-800 dark:text-gray-100">Creator</td>

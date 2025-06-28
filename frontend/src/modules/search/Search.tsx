@@ -9,7 +9,6 @@ import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, Pagi
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useReactToPrint } from "react-to-print";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function renderSkeletonTable() {
     return (
@@ -46,13 +45,13 @@ export default function Search() {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [total, setTotal] = useState(0);
-    const [rowSelection, setRowSelection] = useState<Record<string, unknown>>({});
+    const [, setRowSelection] = useState<Record<string, unknown>>({});
 
     let componentRef = useRef(null);
 
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
-        documentTitle: `${'test'}-Print`,
+        documentTitle: `${new Date()}-Search Results`,
         onPrintError: () => alert("there is an error when printing"),
     });
 
@@ -73,16 +72,17 @@ export default function Search() {
 
     return (
         <div className="p-8 max-w-full overflow-x-auto gap-8" ref={componentRef}>
-            <div className="flex flex-col md:flex-row items-center gap-4 print-hidden">
-                <Textarea className="flex-[2] min-h-[56px]" />
-                <div className="flex-1 flex justify-center">
-                    <Button onClick={() => fetchData(page, pageSize)} className="w-auto px-8">Submit</Button>
-                    <button
+            <div className="flex flex-col md:flex-row items-center gap-4 print-hidden mb-4">
+                <Textarea className="flex-[8] min-h-[56px]" placeholder="Please type here for additional search criteria..."/>
+                <div className="flex-1 flex justify-end">
+                    <Button onClick={() => fetchData(page, pageSize)} className="w-auto m-2">Submit</Button>
+                    <Button onClick={handlePrint} className="w-auto m-2">Print</Button>
+                    {/* <button
                         onClick={handlePrint}
                         className="bg-cyan-500 px-6 py-2 text-white border border-cyan-500 font-bold rounded-md mb-3 w-full lg:w-fit my-6 max-w-sm"
                     >
                         Print Payslip
-                    </button>
+                    </button> */}
                 </div>
             </div>
             <div className="grid col-span-12">
@@ -97,7 +97,7 @@ export default function Search() {
 
                         <div className="flex items-center justify-between mt-4 print-hidden">
                             <div>
-                                <label htmlFor="page-size" className="mr-2">Page Size:</label>
+                                <label htmlFor="page-size" className="mr-2 p-2">Page Size:</label>
                                 <select
                                     id="page-size"
                                     className="border rounded px-2 py-1"

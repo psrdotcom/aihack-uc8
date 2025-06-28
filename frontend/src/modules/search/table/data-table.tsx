@@ -63,21 +63,6 @@ export function DataTable<TData, TValue>({
         <AlertTitle> {table.getFilteredSelectedRowModel().rows.length} of{" "}
             {table.getFilteredRowModel().rows.length} row(s) selected.</AlertTitle>
       </Alert>
-      <button
-        className="print-hidden px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        onClick={() => {
-          // Hide all except selected rows for printing
-          window.requestAnimationFrame(() => {
-            document.body.classList.add('printing-selected');
-            window.print();
-            setTimeout(() => {
-              document.body.classList.remove('printing-selected');
-            }, 1000);
-          });
-        }}
-      >
-        Print
-      </button>
     </div>
     <div className="rounded-md border w-full max-w-screen overflow-x-auto">
       <Table className="min-w-full table-auto whitespace-normal">
@@ -103,15 +88,17 @@ export function DataTable<TData, TValue>({
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => {
               const isSelected = row.getIsSelected();
+              // Print all rows if none are selected, otherwise only selected rows
+              const anySelected = table.getFilteredSelectedRowModel().rows.length > 0;
+              const printClass = typeof window !== 'undefined'
+                ? (anySelected ? (isSelected ? 'print:block' : 'print:hidden') : 'print:block')
+                : '';
               return (
                 <Collapsible key={row.id} asChild>
                   <>
                     <TableRow
                       data-state={isSelected && "selected"}
-                      className={
-                        typeof window !== 'undefined' ?
-                          (isSelected ? 'print:block' : 'print:hidden') : ''
-                      }
+                      className={printClass}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="break-words max-w-xs">
@@ -120,8 +107,7 @@ export function DataTable<TData, TValue>({
                       ))}
                     </TableRow>
                     <CollapsibleContent asChild className={
-                      'p-0 bg-sidebar-accent text-sidebar-primary-foreground ' +
-                      (typeof window !== 'undefined' ? (isSelected ? 'print:block' : 'print:hidden') : '')
+                      'p-0 bg-sidebar-accent text-sidebar-primary-foreground ' + printClass
                     }>
                       <tr className="p-0 border-b">
                         <td colSpan={columns.length + 1} className="p-0 border-t-0">

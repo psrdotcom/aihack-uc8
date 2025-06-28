@@ -1,0 +1,7 @@
+{
+  "host": "hackathon-ai-ap.cluster-cqt08oi8i1b6.us-east-1.rds.amazonaws.com",
+  "database": "postgres",
+  "user": "postgres",
+  "password": "3D6[~771pd5|pkF03dBeL.5#IZ5?",
+  "port": 5432
+}

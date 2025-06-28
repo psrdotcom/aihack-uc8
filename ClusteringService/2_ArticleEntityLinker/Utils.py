@@ -40,11 +40,48 @@ def read_column_from_db(table_name, column_name):
         query = f"SELECT {column_name} FROM {table_name};"
         cursor.execute(query)
         return cursor.fetchall()
-        #print(f"Values from column '{column_name}':")
-        #for row in results:
-        #    print(row[0])
     except Exception as e:
         print(f"Error reading column {column_name}: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_entity_linked_phrases(relevantEntities):
+    conn = get_postgresql_connection()
+    cursor = conn.cursor()
+    try:
+        query = f"SELECT article_id FROM phrases where relevance_category in [{relevantEntities}];"
+        cursor.execute(query)
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Error reading articles : {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_phrases_linked_articles(relevantPhrases):
+    conn = get_postgresql_connection()
+    cursor = conn.cursor()
+    try:
+        query = f"SELECT article_id FROM articles where relevance_category in [{relevantPhrases}];"
+        cursor.execute(query)
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Error reading articles : {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_entity_linked_articles(relevantEntities):
+    conn = get_postgresql_connection()
+    cursor = conn.cursor()
+    try:
+        query = f"SELECT article_id FROM articles where relevance_category in [{relevantEntities}];"
+        cursor.execute(query)
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Error reading articles : {e}")
     finally:
         cursor.close()
         conn.close()

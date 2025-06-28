@@ -8,6 +8,7 @@ import csv
 import io
 import re
 import boto3
+import traceback
 
 app = FastAPI()
 

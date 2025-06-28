@@ -18,7 +18,7 @@ BUCKET_NAME = 'awstraindata'
 def lambda_handler(event, context):
     try:
         # Decode base64-encoded body (API Gateway encodes binary automatically)
-        print(f"Received event: {event}")
+        print(f"Received event")
         body = base64.b64decode(event['body'])
         print(f"Decoded body length: {len(body)} bytes")
         # Get content-type header
@@ -43,9 +43,9 @@ def lambda_handler(event, context):
                 writer = csv.DictWriter(output_csv, fieldnames=["Title", "Source", "Date", "Content"])
                 writer.writeheader()
                 writer.writerow(article)
+                article_id = str(uuid.uuid4())
                 # Generate unique filename
-                csv_filename = f"/input/articles-{uuid.uuid4()}.csv"
-                article_id = str(uuid.uuid4())  # Generate a unique ID for each article
+                csv_filename = f"/input/articles-{article_id}.csv"
                 cursor.execute("""
                         INSERT INTO articles (article_id, title, body, source, published_date)
                         VALUES (%s, %s, %s, %s, %s)""", (article_id, article[0], article[1], article[2], article[3]))

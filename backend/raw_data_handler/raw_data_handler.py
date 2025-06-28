@@ -75,7 +75,7 @@ def get_data_inline(data, articles_id, comprehend, role_arn, cursor, conn):
     print(f"Key phrases detected: {response['KeyPhrases']}")
     for keyPhrase in response['KeyPhrases']:
         keyPhrase['Type'] = 'KeyPhrase'
-    add_entities_to_article(conn, cursor, articles_id, response['KeyPhrases'])
+    add_keyphrase_to_article(conn, cursor, articles_id, response['KeyPhrases'])
     sentiment_response = comprehend.detect_sentiment(
                 Text=data,
                 # DataAccessRoleArn=role_arn,
@@ -115,6 +115,32 @@ def extract_articles(file_stream):
     return articles
 
 
+def add_keyphrase_to_article(conn, cursor, article_id, entities):
+    entities_text = [entity['Text'] for entity in entities]
+    print(f"Entities to be added: {entities_text}")
+    cursor.execute("SELECT * FROM keyphrases WHERE phrases in %s", (tuple(entities_text),))
+    entity_db_array = cursor.fetchall()
+    print(f"Entities in DB: {entity_db_array}")
+    relevance_category = []
+    print(f"article_id: {article_id}")
+    for entity in entities:
+        print(f"Processing entity: {entity}")
+        entity_in_db = [db_entity for db_entity in entity_db_array if db_entity[3].lower() == entity['Text'].lower()]
+        print(f"Entity in DB: {entity_in_db}")
+        if not entity_in_db:
+            current_time = datetime.datetime.utcnow()
+            cursor.execute("INSERT INTO keyphrases (create_time,phrases,type) VALUES (%s, %s, %s) RETURNING id", (current_time, entity['Text'], entity['Type']))
+            conn.commit()
+            db_entity = cursor.fetchone()
+            print(f"Inserted new entity: {db_entity}")
+            relevance_category.append(db_entity[0])
+        else:
+            print(f"Entity already exists in DB: {entity_in_db}")
+            relevance_category.append(entity_in_db[0][0])
+    if relevance_category:
+        relevance_category = ','.join(map(str, relevance_category))
+        cursor.execute("""update articles set relevance_category = %s where article_id = %s""", (relevance_category, article_id))
+
 def add_entities_to_article(conn, cursor, article_id, entities):
     entities_text = [entity['Text'] for entity in entities]
     print(f"Entities to be added: {entities_text}")
@@ -123,10 +149,10 @@ def add_entities_to_article(conn, cursor, article_id, entities):
     print(f"Entities in DB: {entity_db_array}")
     location_mentions = []
     officials_involved = []
-    relevance_category = []
+    # relevance_category = []
     print(f"article_id: {article_id}")
-    
-    print(f"Relevance category: {relevance_category}")
+
+    # print(f"Relevance category: {relevance_category}")
     for entity in entities:
         print(f"Processing entity: {entity}")
         entity_in_db = [db_entity for db_entity in entity_db_array if db_entity[3].lower() == entity['Text'].lower()]
@@ -139,18 +165,18 @@ def add_entities_to_article(conn, cursor, article_id, entities):
             print(f"Inserted new entity: {db_entity}")
             if entity['Type'] == 'LOCATION':
                 location_mentions.append(db_entity[0])
-            elif entity['Type'] == 'PERSON':
+            elif entity['Type'] == 'PERSON' or entity['Type'] == 'ORGANIZATION':
                 officials_involved.append(db_entity[0])
-            else:
-                relevance_category.append(db_entity[0])
+            # else:
+            #     relevance_category.append(db_entity[0])
         else:
             print(f"Entity already exists in DB: {entity_in_db}")
             if entity['Type'] == 'LOCATION':
                 location_mentions.append(entity_in_db[0][0])
-            elif entity['Type'] == 'PERSON':
+            elif entity['Type'] == 'PERSON' or entity['Type'] == 'ORGANIZATION':
                 officials_involved.append(entity_in_db[0][0])
-            else:
-                relevance_category.append(entity_in_db[0][0])
+            # else:
+            #     relevance_category.append(entity_in_db[0][0])
     if location_mentions:
         location_mentions = ','.join(map(str, location_mentions))
         cursor.execute("""update articles set location_mentions = %s where article_id = %s""", (location_mentions, article_id))
@@ -159,12 +185,12 @@ def add_entities_to_article(conn, cursor, article_id, entities):
         officials_involved = ','.join(map(str, officials_involved))
         cursor.execute("""update articles set officials_involved = %s where article_id = %s""", (officials_involved, article_id))
 
-    if relevance_category:
-        cursor.execute("SELECT relevance_category FROM articles WHERE article_id = %s", (article_id,))
-        existing = cursor.fetchone()
-        relevance_category = ','.join(map(str, relevance_category))
-        if existing[0] is not None:
-            print(f"Existing relevance category: {existing[0]}")
-            relevance_category = relevance_category + ',' + existing[0]
-        cursor.execute("""update articles set relevance_category = %s where article_id = %s""", (relevance_category, article_id))
-        cursor.execute("""update articles set relevance_category = %s where article_id = %s""", (relevance_category, article_id))
+    # if relevance_category:
+    #     cursor.execute("SELECT relevance_category FROM articles WHERE article_id = %s", (article_id,))
+    #     existing = cursor.fetchone()
+    #     relevance_category = ','.join(map(str, relevance_category))
+    #     if existing[0] is not None:
+    #         print(f"Existing relevance category: {existing[0]}")
+    #         relevance_category = relevance_category + ',' + existing[0]
+    #     cursor.execute("""update articles set relevance_category = %s where article_id = %s""", (relevance_category, article_id))
+    #     cursor.execute("""update articles set relevance_category = %s where article_id = %s""", (relevance_category, article_id))

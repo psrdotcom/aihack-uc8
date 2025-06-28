@@ -2,7 +2,8 @@ name: Deploy API Gateway
 
 on:
   push:
-    branches: [main, backend_changes]
+    paths:
+        - 'api/*'
 
 jobs:
   deploy-api:

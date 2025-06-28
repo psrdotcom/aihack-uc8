@@ -2,8 +2,8 @@ name: Build Lambda Layer
 
 on:
   push:
-    branches: [main, automation]
-  workflow_dispatch:
+    paths:
+      - backend/requirements.txt
 
 jobs:
   build-layer:
@@ -11,12 +11,12 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.9'  # Adjust Python version as needed
+          python-version: '3.9'  # Adjust to your Lambda runtime
 
       - name: Create python directory for layer
         run: mkdir -p python
@@ -28,8 +28,8 @@ jobs:
       - name: Zip the layer
         run: zip -r layer.zip python
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload layer artifact
+        uses: actions/upload-artifact@v4
         with:
           name: lambda-layer
           path: layer.zip

@@ -4,8 +4,8 @@ import tarfile
 import json
 import psycopg2
 import io
+from Utils import get_postgresql_connection
 
-from EntityRecog.Utils import get_postgresql_connection
 def lambda_handler(event, context):
     for record in event['Records']:
         print(f"New record: {record}")

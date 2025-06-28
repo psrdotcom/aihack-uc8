@@ -1,5 +1,4 @@
-fastapi
-pydantic
-pydantic-core
-typing-extensions
-mangum
+numpy
+pandas
+boto3
+psycopg2

@@ -95,8 +95,6 @@ for index, row in input_csv.iterrows():
     print("Entities Job Response:", entities_output)
     print("Sentiment Job Response:", sentiment_output)
     print("Key Phrases Job Response:", key_phrases_output)
-
-   
     print("Inserting into comprehend_jobs table")
     cursor.execute("""
         INSERT INTO comprehend_jobs (article_id, input_s3_uri, entities_path, sentiment_path, key_phrases_path)

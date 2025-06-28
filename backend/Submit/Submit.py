@@ -42,7 +42,7 @@ def lambda_handler(event, context):
             file_stream = io.BytesIO(part.content)
             file_stream.seek(0)
             file_id = str(uuid.uuid4())
-            s3_key = f"raw_data/{file_id}-{filename}"
+            s3_key = f"raw_data/{file_id}-{filename.replace(' ', '_').replace('/', '_')}"
             # Upload to S3
             s3.put_object(
                 Bucket=BUCKET_NAME,

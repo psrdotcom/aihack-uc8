@@ -4,7 +4,7 @@
   "method": {
     "httpMethod": "POST",
     "authorizationType": "NONE",
-    "lambdaFunctionName": "ANother-test"
+    "lambdaFunctionName": "Submit"
   },
   "deploy": true
 }

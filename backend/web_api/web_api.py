@@ -5,8 +5,8 @@ import uuid
 from fastapi import FastAPI, Depends, HTTPException, Response
 from sqlmodel import Session, select
 
-from .database import get_session
-from .models import Articles, ArticleCreate, ArticleRead, Clusters, ClusterCreate, ClusterRead
+from database import get_session
+from models import Articles, ArticleCreate, ArticleRead, Clusters, ClusterCreate, ClusterRead
 from typing import List, Dict, Any
 
 from contextlib import asynccontextmanager, closing
@@ -21,9 +21,9 @@ from mangum import Mangum
 
 # # Import our new Bedrock agent function
 # from bedrock_agent import generate_sql_from_prompt
-
+# namasthe
 # Import our new agent invoker function
-from .bedrock_agent_invoke import invoke_bedrock_agent_to_get_sql
+from bedrock_agent_invoke import invoke_bedrock_agent_to_get_sql
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
@@ -130,7 +130,7 @@ def get_db_connection():
     finally:
         conn.close()
 
-@app.post("/query/agent", response_model=List[Dict[str, Any]])
+@app.post("/queryagent", response_model=List[Dict[str, Any]])
 def query_with_bedrock_agent(query: NaturalLanguageQuery, conn=Depends(get_db_connection)):
     """
     Takes a natural language question, sends it to a pre-configured Bedrock Agent,

@@ -6,7 +6,7 @@ from sqlmodel import create_engine, SQLModel, Session
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
     "postgresql://your_user:your_password@your_aurora_endpoint/myappdb"
-).replace("postgresql://", "postgresql+psycopg://")
+).replace("postgresql://", "postgresql+psycopg2://")
 
 # The 'connect_args' is needed for SQLite, but not for PostgreSQL.
 # For PostgreSQL, you can remove it.

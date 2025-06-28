@@ -13,6 +13,7 @@ repo_owner, repo_name = repo_full.split('/')
 app_name = f"amplify-{repo_name}"
 
 client = boto3.client('amplify','us-east-1')
+print(GITHUB_PAT)
 
 # Create Amplify App
 app_response = client.create_app(

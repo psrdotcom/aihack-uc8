@@ -42,7 +42,7 @@ jobs:
             --output text)
 
           # If your secret is a JSON, extract the actual value
-          # GITHUB_PAT=$(echo "$GITHUB_PAT" | jq -r .github_pat)
+          GITHUB_PAT=$(echo "$GITHUB_PAT" | jq -r .github_pat)
 
           echo "GITHUB_PAT=$GITHUB_PAT" >> $GITHUB_ENV
 

@@ -1,0 +1,37 @@
+name: Deploy to AWS Amplify (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: 'GitHub repository (e.g. user/repo-name)'
+        required: true
+      branch:
+        description: 'Branch to deploy (e.g. main)'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout this repo (if needed)
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip boto3
+
+      - name: Run Amplify Deployment Script
+        env:
+          AWS_ACCESS_KEY_ID: AKIAT5VEV4FHFQQJBZVX
+          AWS_SECRET_ACCESS_KEY: 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
+          AWS_DEFAULT_REGION: 'us-east-1'  # change if needed
+          GITHUB_PAT: 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
+        run: |
+          python amplify.py "${{ github.event.inputs.repo }}" "${{ github.event.inputs.branch }}"

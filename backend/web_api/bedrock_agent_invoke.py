@@ -95,20 +95,25 @@ def invoke_bedrock_agent_to_get_sql(
         if not final_sql_query:
             for event in all_events:
                 if 'chunk' in event:
-                    try:
-                        data = json.loads(event['chunk']['bytes'].decode())
-                        if data.get('type') == 'finalResponse':
-                            text = data.get('text', '')
-                            if '```sql' in text:
-                                sql_start = text.find('```sql') + len('```sql')
-                                sql_end = text.find('```', sql_start)
-                                final_sql_query = text[sql_start:sql_end].strip()
-                            else:
-                                final_sql_query = text.strip()
-                            print(f"Extracted SQL from chunk finalResponse: {final_sql_query}")
-                            break
-                    except Exception as e:
-                        print(f"Error decoding chunk: {e}")
+                    raw_bytes = event['chunk']['bytes']
+                    print(f"Raw chunk bytes: {raw_bytes!r}")
+                    if raw_bytes:
+                        try:
+                            data = json.loads(raw_bytes.decode())
+                            if data.get('type') == 'finalResponse':
+                                text = data.get('text', '')
+                                if '```sql' in text:
+                                    sql_start = text.find('```sql') + len('```sql')
+                                    sql_end = text.find('```', sql_start)
+                                    final_sql_query = text[sql_start:sql_end].strip()
+                                else:
+                                    final_sql_query = text.strip()
+                                print(f"Extracted SQL from chunk finalResponse: {final_sql_query}")
+                                break
+                        except Exception as e:
+                            print(f"Error decoding chunk: {e}")
+                    else:
+                        print("Chunk bytes are empty, skipping.")
 
         return final_sql_query
 

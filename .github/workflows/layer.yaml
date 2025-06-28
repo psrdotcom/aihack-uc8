@@ -2,6 +2,7 @@ name: Build Lambda Layer
 
 on:
   push:
+    branches: [main, automation]
     paths:
       - backend/requirements.txt
 

@@ -15,7 +15,7 @@ def lambda_handler(event, context):
             s3 = boto3.client('s3')
             obj = s3.get_object(Bucket=bucket, Key=key)
             tar_bytes = io.BytesIO(obj['Body'].read())
-
+            print(f"Processing file: {key}")
             # Extract .json inside the tar.gz
             with tarfile.open(fileobj=tar_bytes, mode='r:gz') as tar:
                 for member in tar.getmembers():
@@ -24,7 +24,7 @@ def lambda_handler(event, context):
                         results = json.load(file)
                         print(f"Extracted JSON: {results}")
                         break
-
+            print(f"Results: {results}")
             if not results:
                 folderSplit = key.split('/')
                 type = folderSplit[0]
@@ -53,7 +53,6 @@ def lambda_handler(event, context):
                 cursor.close()
                 ## delete the s3 object
                 s3.delete_object(Bucket=bucket, Key=result['input_s3_uri'])
-                # s3.delete_object(Bucket=bucket, Key=key)
                 conn.close()
     except Exception as e:
         print(f"Error processing record: {e}")
@@ -66,14 +65,40 @@ def add_entities_to_article(cursor, article_id, entities):
     entities_text = [entity['Text'] for entity in entities]
     cursor.execute("SELECT * FROM entities WHERE entity in (%s)", (tuple(entities_text),))
     entity_db_array = [row[0] for row in cursor.fetchall()]
-    entity_ids = cursor.execute("SELECT entities FROM articles WHERE articles_id = %s", (article_id,)).cursor.fetchall()
+    location_mentions = []
+    officials_involved = []
+    relevance_category = []
     for entity in entities:
         entity_in_db = [db_entity for db_entity in entity_db_array if db_entity['entity'] == entity['Text']]
         if not entity_in_db:
             current_time = datetime.datetime.utcnow()
             cursor.execute("INSERT INTO entities (create_time,entity,type) VALUES (%s, %s, %s) RETURNING id", (current_time, entity['Text'], entity['Type']))
             db_entity = cursor.fetchone()
-            entity_ids.append(db_entity[0])
+            if entity['Type'] == 'Location':
+                location_mentions.append(db_entity[0])
+            elif entity['Type'] == 'Person':
+                officials_involved.append(db_entity[0])
+            elif entity['Type'] == 'KeyPhrases':
+                relevance_category.append(db_entity[0])
+            else:
+                print(f"Unknown entity type: {entity['Type']}")
         else:
-            entity_ids.append(entity_in_db[0]['Id'])
-    cursor.execute("""update articles set entities = %s where articles_id = %s""", (entity_ids, article_id))
+            if entity['Type'] == 'Location':
+                location_mentions.append(entity_in_db[0]['Id'])
+            elif entity['Type'] == 'Person':
+                officials_involved.append(entity_in_db[0]['Id'])
+            elif entity['Type'] == 'KeyPhrases':
+                relevance_category.append(entity_in_db[0]['Id'])
+            else:
+                print(f"Unknown entity type: {entity['Type']}")
+    if location_mentions:
+        location_mentions = ','.join(map(str, location_mentions))
+        cursor.execute("""update articles set location_mentions = %s where articles_id = %s""", (location_mentions, article_id))
+
+    if officials_involved:
+        officials_involved = ','.join(map(str, officials_involved))
+        cursor.execute("""update articles set officials_involved = %s where articles_id = %s""", (officials_involved, article_id))
+
+    if relevance_category:
+        relevance_category = ','.join(map(str, relevance_category))
+        cursor.execute("""update articles set relevance_category = %s where articles_id = %s""", (relevance_category, article_id))

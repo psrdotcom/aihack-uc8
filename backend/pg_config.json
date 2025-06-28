@@ -1,6 +1,6 @@
 {
-  "host": "ap-ai-hackathon.cluster-cqt08oi8i1b6.us-east-1.rds.amazonaws.com",
-  "database": "postgres",
+  "host": "hackathon-ai-ap.cluster-cqt08oi8i1b6.us-east-1.rds.amazonaws.com",
+  "database": "bedrock_integration",
   "user": "postgres",
   "password": "!>.VZS<zH-~qXvqs>)91jj5b0aer",
   "port": 5432

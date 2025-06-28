@@ -11,6 +11,7 @@ import io
 import re
 import boto3
 import traceback
+from test_agent import is_relevance
 
 BUCKET_NAME = 'awstraindata'
 role = 'arn:aws:iam::269854564686:role/hackathon-comprehend-role'
@@ -32,6 +33,11 @@ def lambda_handler(event, context):
             print(f"Extracted {len(articles)} articles from part")
             for article in articles:
                 print(f"Processing article: {article['Title']}")
+                # Check if article is relevant
+                is_relevant = is_relevance(article)
+                if not is_relevant:
+                    print(f"Article {article['Title']} is not relevant, skipping")
+                    continue
                 output_csv = io.StringIO()
                 writer = csv.DictWriter(output_csv, fieldnames=["Title", "Source", "Date", "Content"])
                 # writer.writeheader()

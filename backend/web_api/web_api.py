@@ -5,8 +5,8 @@ import uuid
 from fastapi import FastAPI, Depends, HTTPException, Response
 from sqlmodel import Session, select
 
-from backend.web_api.database import get_session
-from backend.web_api.models import Articles, ArticleCreate, ArticleRead, Clusters, ClusterCreate, ClusterRead
+from database import get_session
+from models import Articles, ArticleCreate, ArticleRead, Clusters, ClusterCreate, ClusterRead
 from typing import List, Dict, Any
 
 from contextlib import asynccontextmanager, closing
@@ -23,7 +23,7 @@ from mangum import Mangum
 # from bedrock_agent import generate_sql_from_prompt
 # namasthe
 # Import our new agent invoker function
-from backend.web_api.bedrock_agent_invoke import invoke_bedrock_agent_to_get_sql
+from bedrock_agent_invoke import invoke_bedrock_agent_to_get_sql
 
 # Load environment variables from .env file
 from dotenv import load_dotenv

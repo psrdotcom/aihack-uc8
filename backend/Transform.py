@@ -1,4 +1,3 @@
-from turtle import pd
 import boto3
 import tarfile
 import json
@@ -45,12 +44,14 @@ def lambda_handler(event, context):
                         if not relevance_category:
                             cursor.execute("""update articles set  relevance_category = %s where articles_id = %s""", (relevance_category, article_id))
                     elif type == 'sentiment':
-                        sentiment = row.get('Sentiment', 'NEUTRAL')
+                        sentiment = result.get('Sentiment', 'NEUTRAL')
                         if not sentiment:
                             cursor.execute("""update articles set sentiment = %s where articles_id = %s""", (sentiment, article_id))
                     elif type == 'keyphrases':
-                        key_phrases = ', '.join(row.get('KeyPhrases', []))
+                        key_phrases = ', '.join(result.get('KeyPhrases', []))
                         if not key_phrases:
                             cursor.execute("""update articles set key_phrases = %s where articles_id = %s""", (key_phrases, article_id))
             cursor.close()
+            ## delete the s3 object
+            s3.delete_object(Bucket=bucket, Key=result['input_s3_uri'])
             conn.close()

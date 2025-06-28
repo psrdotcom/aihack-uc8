@@ -29,6 +29,15 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS articles (
                         relevance_category TEXT,
                         sentiment TEXT
                     )""")
+cursor.execute("""
+                CREATE TABLE IF NOT EXISTS comprehend_jobs (
+                    article_id TEXT,
+                    input_s3_uri TEXT,
+                    entities_path TEXT,
+                    sentiment_path TEXT,
+                    key_phrases_path TEXT
+                )
+                """)
 input_csv = pd.read_csv(io.BytesIO(input_csv_object['Body'].read()))
 for index, row in input_csv.iterrows():
     print(f"Processing row {index}: {row}")
@@ -54,7 +63,7 @@ for index, row in input_csv.iterrows():
         OutputDataConfig={'S3Uri': 's3://awstraindata/output/entities/'},
         DataAccessRoleArn=role_arn,
         LanguageCode='en',
-        JobName='MyEntityDetectionJob_' + str(int(time.time())),
+        JobName='MyEntityDetectionJob_'+ articles_id + '_' + str(int(time.time()))
     )
     result = comprehend.describe_entities_detection_job(JobId=entities_job['JobId'])
     entities_output = result['EntitiesDetectionJobProperties']['OutputDataConfig']['S3Uri']
@@ -65,7 +74,7 @@ for index, row in input_csv.iterrows():
         OutputDataConfig={'S3Uri': 's3://awstraindata/output/sentiment/'},
         DataAccessRoleArn=role_arn,
         LanguageCode='en',
-        JobName='MySentimentDetectionJob_' + str(int(time.time())),
+        JobName='MySentimentDetectionJob_' + articles_id + '_' + str(int(time.time()))
     )
     res = comprehend.describe_sentiment_detection_job(JobId=sentiment_job['JobId'])
     sentiment_output = res['SentimentDetectionJobProperties']['OutputDataConfig']['S3Uri']
@@ -76,7 +85,7 @@ for index, row in input_csv.iterrows():
         OutputDataConfig={'S3Uri': 's3://awstraindata/output/keyphrases/'},
         DataAccessRoleArn=role_arn,
         LanguageCode='en',
-        JobName='MyKeyPhrasesDetectionJob_' + str(int(time.time())),
+        JobName='MyKeyPhrasesDetectionJob_' + articles_id + '_' + str(int(time.time()))
     )
     res = comprehend.describe_key_phrases_detection_job(JobId=phrases_job['JobId'])
     key_phrases_output = res['KeyPhrasesDetectionJobProperties']['OutputDataConfig']['S3Uri']
@@ -86,15 +95,8 @@ for index, row in input_csv.iterrows():
     cursor.execute("""
                    drop table if exists comprehend_jobs
     """)
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS comprehend_jobs (
-        article_id TEXT,
-        input_s3_uri TEXT,
-        entities_path TEXT,
-        sentiment_path TEXT,
-        key_phrases_path TEXT
-    )
-    """)
+   
+    print("Inserting into comprehend_jobs table")
     cursor.execute("""
         INSERT INTO comprehend_jobs (article_id, input_s3_uri, entities_path, sentiment_path, key_phrases_path)
         VALUES (%s, %s, %s, %s, %s)""", (articles_id, s3_uri, entities_output.replace('s3://awstraindata/', ''), sentiment_output.replace('s3://awstraindata/', ''), key_phrases_output.replace('s3://awstraindata/', '')))

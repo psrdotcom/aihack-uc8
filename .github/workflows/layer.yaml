@@ -1,0 +1,35 @@
+name: Build Lambda Layer
+
+on:
+  push:
+    paths:
+      - backend/requirements.txt
+
+jobs:
+  build-layer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'  # Adjust Python version as needed
+
+      - name: Create python directory for layer
+        run: mkdir -p python
+
+      - name: Install dependencies to python/
+        run: |
+          pip install -r backend/requirements.txt -t python/
+
+      - name: Zip the layer
+        run: zip -r layer.zip python
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lambda-layer
+          path: layer.zip

@@ -1,4 +1,5 @@
 import base64
+import json
 from requests_toolbelt.multipart import decoder
 import uuid
 from Utils import get_postgresql_connection
@@ -66,7 +67,16 @@ def lambda_handler(event, context):
                 s3_urls.append(s3_url)
         cursor.close()
         conn.close()
-        return {"statusCode": 200, "status": "success", "s3_urls": s3_urls}
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            "body": json.dumps({
+                "status": "success",
+                "s3_urls": s3_urls
+            })
+        }
     except Exception as e:
         traceback.print_exc() 
         return {"statusCode": 500, "body": f"❌ Error: {str(e)}"}

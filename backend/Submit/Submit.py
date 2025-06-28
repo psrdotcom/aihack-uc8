@@ -18,8 +18,9 @@ BUCKET_NAME = 'awstraindata'
 def lambda_handler(event, context):
     try:
         # Decode base64-encoded body (API Gateway encodes binary automatically)
+        print(f"Received event: {event}")
         body = base64.b64decode(event['body'])
-
+        print(f"Decoded body length: {len(body)} bytes")
         # Get content-type header
         content_type = event['headers'].get('Content-Type') or event['headers'].get('content-type')
         if not content_type:
@@ -27,17 +28,17 @@ def lambda_handler(event, context):
 
         # Parse multipart form
         multipart_data = decoder.MultipartDecoder(body, content_type)
+        print(f"Multipart data parts: {len(multipart_data.parts)}")
         s3_urls = []
         conn = get_postgresql_connection()
         cursor = conn.cursor()
         for part in multipart_data.parts:
+            print(f"Processing part: {part.headers.get(b'Content-Disposition')}")
             # Extract file name from content-disposition
-            cd = part.headers.get(b'Content-Disposition', b'').decode()
-            if 'filename=' not in cd:
-                continue
-            filename = cd.split('filename="')[1].split('"')[0]
             articles = extract_articles(io.BytesIO(part.content))
+            print(f"Extracted {len(articles)} articles from part")
             for article in articles:
+                print(f"Processing article: {article[0]}")
                 output_csv = io.StringIO()
                 writer = csv.DictWriter(output_csv, fieldnames=["Title", "Source", "Date", "Content"])
                 writer.writeheader()
@@ -49,12 +50,14 @@ def lambda_handler(event, context):
                         INSERT INTO articles (article_id, title, body, source, published_date)
                         VALUES (%s, %s, %s, %s, %s)""", (article_id, article[0], article[1], article[2], article[3]))
                 # Upload to S3
+                print(f"Uploading CSV to S3: {csv_filename}")
                 s3.put_object(
                     Bucket=BUCKET_NAME,
                     Key=csv_filename,
                     Body=output_csv.getvalue(),
                     ContentType='text/csv'
                 )
+                print(f"Uploaded CSV to S3: {csv_filename}")
                 s3_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{csv_filename}"
                 s3_urls.append(s3_url)
         return {"statusCode": 200, "status": "success", "count": len(articles), "data": articles, "s3_urls": s3_urls}

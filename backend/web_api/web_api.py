@@ -9,13 +9,12 @@ from database import get_session, create_db_and_tables
 from models import Articles, ArticleCreate, ArticleRead, Clusters, ClusterCreate, ClusterRead
 from typing import List, Dict, Any
 
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, closing
 # from typing import List, Dict, Any
 
 # from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field
-from psycopg_pool import ConnectionPool
-from psycopg import ProgrammingError
+from psycopg2 import connect, ProgrammingError
 from mangum import Mangum
 
 # # Import our new Bedrock agent function
@@ -40,7 +39,6 @@ async def lifespan(app: FastAPI):
     print("Application startup...")
     yield
     print("Application shutdown...")
-    pool.close()
 
 
 # This event handler runs once when the application starts.
@@ -118,24 +116,16 @@ class NaturalLanguageQuery(BaseModel):
 # --- Database Connection ---
 # IMPORTANT: Use a read-only user for the database connection.
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://your_user:your_password@your_aurora_endpoint/myappdb")
-pool = ConnectionPool(conninfo=DATABASE_URL)
 
 def get_db_connection():
-    with pool.connection() as conn:
+    conn = connect(DATABASE_URL)
+    try:
         yield conn
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    if not AGENT_ID:
-        raise RuntimeError("BEDROCK_AGENT_ID environment variable not set.")
-    print("Application startup...")
-    yield
-    print("Application shutdown...")
-    pool.close()
+    finally:
+        conn.close()
 
 app = FastAPI(
-    title="FastAPI with Bedrock Agents",
-    lifespan=lifespan
+    title="FastAPI with Bedrock Agents"
 )
 
 @app.post("/query/agent", response_model=List[Dict[str, Any]])
@@ -171,7 +161,7 @@ def query_with_bedrock_agent(query: NaturalLanguageQuery, conn=Depends(get_db_co
 
     # 3. Execute the SQL from the agent
     try:
-        with conn.cursor() as cur:
+        with closing(conn.cursor()) as cur:
             cur.execute(generated_sql)
             if cur.description is None:
                 return []

@@ -22,12 +22,19 @@ def is_relevance(article):
     )
     is_relevant = False
     # Read the response stream
+    print("Response from Bedrock Agent:")
+    print(response)
     for event in response["completion"]:
+        print("Event:", event)
         if "chunk" in event:
+            print("Processing chunk...")
+            print("Chunk ID:", event["chunk"])
             payload = event["chunk"]["bytes"]
             chunk_str = payload.decode("utf-8")
             match = re.search(r"\{.*\}", chunk_str, re.DOTALL)
             if match:
+                print("Found JSON block in chunk")
+                print("JSON Block:", match.group(0))
                 json_block = match.group(0)
                 parsed_json = json.loads(json_block)
                 print("Parsed JSON:", parsed_json)

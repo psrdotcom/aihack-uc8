@@ -8,12 +8,11 @@ from Utils import get_postgresql_connection
 
 comprehend = boto3.client('comprehend')
 
-input_s3_uri = 's3://awstraindata/input.csv'
 role_arn = 'arn:aws:iam::269854564686:role/hackathon-comprehend-role'
 bucket_name = 'awstraindata'
 s3 = boto3.client('s3')
 # Download the file object
-input_csv_object = s3.get_object(Bucket=bucket_name, Key='input.csv')
+input_csv_object = s3.get_object(Bucket=bucket_name, Key='input_small.csv')
 
 # Read CSV into DataFrame
 conn = get_postgresql_connection()

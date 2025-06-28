@@ -2,7 +2,6 @@ from turtle import pd
 import boto3
 import tarfile
 import json
-import psycopg2
 import io
 from Utils import get_postgresql_connection
 

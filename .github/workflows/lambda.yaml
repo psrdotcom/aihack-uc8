@@ -34,6 +34,12 @@ jobs:
 
       - name: Deploy Lambda Functions (No dependencies)
         run: |
+          LAYER_ARN=$(aws lambda list-layer-versions \
+            --layer-name "my-python-layer" \
+            --query 'LayerVersions[0].LayerVersionArn' \
+            --output text)
+
+          echo "Using latest layer version: $LAYER_ARN"
           for dir in "$LAMBDA_DIR"/*/; do
             dir=${dir%/}
             function_name=$(basename "$dir")
@@ -53,7 +59,7 @@ jobs:
             mkdir -p "$build_dir"
 
             # Copy Lambda source file
-            cp "$entry_point" "$build_dir/"
+            cp -r "$dir"/* "$build_dir/"
 
             # Copy all top-level shared files from backend (excluding directories and requirements.txt)
             find "$LAMBDA_DIR" -maxdepth 1 -type f ! -name "requirements.txt" -exec cp {} "$build_dir/" \;
@@ -73,6 +79,7 @@ jobs:
                 --function-name "$function_name" \
                 --s3-bucket "$DEPLOY_BUCKET" \
                 --s3-key "${function_name}.zip"
+                --layers "$LAYER_ARN"
             else
               echo "Creating Lambda: $function_name"
               aws lambda create-function \
@@ -83,6 +90,6 @@ jobs:
                 --code S3Bucket="$DEPLOY_BUCKET",S3Key="${function_name}.zip" \
                 --timeout 900 \
                 --vpc-config SubnetIds=subnet-02e62e34308bb07d5,subnet-0534b99dd34e646f1,SecurityGroupIds=sg-0b9a6b812b30a1107 \
-                --layers "arn:aws:lambda:us-east-1:269854564686:layer:my-python-layer:4"  # 🔁 Replace with your actual layer ARN
+                --layers "$LAYER_ARN"
             fi
           done

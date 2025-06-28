@@ -16,6 +16,7 @@ from contextlib import asynccontextmanager
 from pydantic import BaseModel, Field
 from psycopg_pool import ConnectionPool
 from psycopg import ProgrammingError
+from mangum import Mangum
 
 # # Import our new Bedrock agent function
 # from bedrock_agent import generate_sql_from_prompt
@@ -183,4 +184,11 @@ def query_with_bedrock_agent(query: NaturalLanguageQuery, conn=Depends(get_db_co
         raise HTTPException(status_code=400, detail=f"Invalid SQL Query from Agent: {e}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database execution error: {e}")
-    
+
+handler = Mangum(app)
+
+def lambda_handler(event, context):
+    """
+    AWS Lambda handler for FastAPI app using Mangum adapter.
+    """
+    return handler(event, context)

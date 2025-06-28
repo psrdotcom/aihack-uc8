@@ -79,7 +79,6 @@ jobs:
                 --function-name "$function_name" \
                 --s3-bucket "$DEPLOY_BUCKET" \
                 --s3-key "${function_name}.zip"
-                --layers "$LAYER_ARN"
             else
               echo "Creating Lambda: $function_name"
               aws lambda create-function \

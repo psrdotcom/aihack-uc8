@@ -59,13 +59,13 @@ def lambda_handler(event, context):
 
 def get_data_inline(data, articles_id, comprehend, role_arn, cursor, conn):
     entities_response = comprehend.detect_entities(
-                Text=data['Content'],
+                Text=data,
                 DataAccessRoleArn=role_arn,
                 LanguageCode='en'
             )
     add_entities_to_article(conn, cursor, articles_id, entities_response['Entities'])
     response = comprehend.detect_key_phrases(
-            Text=data['Content'],
+            Text=data,
             DataAccessRoleArn=role_arn,
             LanguageCode='en'
         )
@@ -73,7 +73,7 @@ def get_data_inline(data, articles_id, comprehend, role_arn, cursor, conn):
         keyPhrase['Type'] = 'KeyPhrase'
     add_entities_to_article(conn, cursor, articles_id, response['KeyPhrases'])
     sentiment_response = comprehend.detect_sentiment(
-                Text=data['Content'],
+                Text=data,
                 DataAccessRoleArn=role_arn,
                 LanguageCode='en'
     )

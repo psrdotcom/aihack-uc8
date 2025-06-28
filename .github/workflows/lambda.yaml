@@ -7,6 +7,7 @@ on:
 
 env:
   LAMBDA_DIR: backend
+  DEPLOY_BUCKET: hackathon-lambda-ap-ai-cyberark
 
 jobs:
   deploy:
@@ -29,55 +30,66 @@ jobs:
         with:
           aws-access-key-id: AKIAT5VEV4FHFQQJBZVX
           aws-secret-access-key: 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
-          aws-region: us-east-1  # Change this if needed
+          aws-region: us-east-1
 
-      - name: Deploy Python Lambda Files with Dependencies
+      - name: Deploy Lambda Functions
         run: |
-          for file in $LAMBDA_DIR/*.py; do
-            filename=$(basename -- "$file")
-            function_name="${filename%.*}"
+          for dir in "$LAMBDA_DIR"/*/; do
+            dir=${dir%/}  # remove trailing slash
+            function_name=$(basename "$dir")
+            entry_point="$dir/${function_name}.py"
+
+            if [ ! -f "$entry_point" ]; then
+              echo "Skipping $function_name: Entry point $entry_point not found."
+              continue
+            fi
+
+            echo "Packaging Lambda function: $function_name"
+
             build_dir="/tmp/${function_name}_build"
             zip_file="/tmp/${function_name}.zip"
 
-            echo "Creating build directory at $build_dir"
             rm -rf "$build_dir"
             mkdir -p "$build_dir"
 
-            echo "Copying $file to $build_dir"
-            cp "$file" "$build_dir/"
+            # Copy the Lambda's main .py file
+            cp "$entry_point" "$build_dir/"
 
+            # ✅ Copy all top-level files in backend (excluding subfolders)
+            find "$LAMBDA_DIR" -maxdepth 1 -type f -exec cp {} "$build_dir/" \;
+
+            # Remove requirements.txt from build_dir (only needed for pip install)
+            rm -f "$build_dir/requirements.txt"
+
+            # Install dependencies into build_dir
             if [ -f "$LAMBDA_DIR/requirements.txt" ]; then
-              echo "Installing dependencies from requirements.txt"
-              pip install -r "$LAMBDA_DIR/requirements.txt" -t "$build_dir"
+              pip install --no-cache-dir -r "$LAMBDA_DIR/requirements.txt" -t "$build_dir"
             fi
 
-            echo "Zipping contents into $zip_file"
+            # Create ZIP
             cd "$build_dir"
             zip -r "$zip_file" . > /dev/null
             cd -
 
-            echo "Checking if function $function_name exists..."
-            if aws lambda get-function --function-name "$function_name" > /dev/null 2>&1; then
-              echo "Function exists. Updating code..."
-              aws s3 cp "$zip_file" "s3://$DEPLOY_BUCKET/$function_name.zip"
+            # Upload to S3
+            aws s3 cp "$zip_file" "s3://${DEPLOY_BUCKET}/${function_name}.zip"
 
+            # Check if function exists
+            if aws lambda get-function --function-name "$function_name" > /dev/null 2>&1; then
+              echo "Updating Lambda function: $function_name"
               aws lambda update-function-code \
                 --function-name "$function_name" \
-                --s3-bucket "hackathon-lambda-ap-ai-cyberark" \
-                --s3-key "$function_name.zip"
-
+                --s3-bucket "$DEPLOY_BUCKET" \
+                --s3-key "${function_name}.zip"
             else
-              echo "Function does not exist. Creating..."
-              aws s3 cp "$zip_file" "s3://hackathon-lambda-ap-ai-cyberark/$function_name.zip"
-
+              echo "Creating Lambda function: $function_name"
               aws lambda create-function \
                 --function-name "$function_name" \
                 --runtime python3.12 \
                 --role "arn:aws:iam::269854564686:role/hackathon-lambda-role" \
                 --handler "${function_name}.lambda_handler" \
-                --code S3Bucket="hackathon-lambda-ap-ai-cyberark",S3Key="$function_name.zip" \
+                --code S3Bucket="$DEPLOY_BUCKET",S3Key="${function_name}.zip" \
                 --timeout 900 \
                 --vpc-config SubnetIds=subnet-02e62e34308bb07d5,subnet-0534b99dd34e646f1,SecurityGroupIds=sg-0b9a6b812b30a1107
-
             fi
           done

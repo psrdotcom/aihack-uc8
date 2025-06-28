@@ -11,6 +11,7 @@ def lambda_handler(event, context):
             print(f"New record: {record}")
             bucket = record['s3']['bucket']['name']
             key = record['s3']['object']['key']
+            print(f"Processing file from bucket: {bucket}, key: {key}")
             conn = get_postgresql_connection()
             s3 = boto3.client('s3')
             obj = s3.get_object(Bucket=bucket, Key=key)

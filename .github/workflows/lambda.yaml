@@ -2,8 +2,9 @@ name: Deploy Lambdas
 
 on:
   push:
-    paths:
-      - 'backend/*'
+    branches:
+      - main
+      - backend_changes
 
 env:
   LAMBDA_DIR: backend

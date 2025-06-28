@@ -11,7 +11,7 @@ jobs:
 
     env:
       LAYER_NAME: my-python-layer
-      PYTHON_VERSION: python3.11
+      PYTHON_VERSION: python3.9
       S3_KEY: layers/layer.zip
 
     steps:
@@ -21,12 +21,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.9'
 
       - name: Install dependencies to python/
         run: |
           mkdir -p python
-          pip install -r backend/requirements.txt -t python/
+          pip install -r backend/requirements.txt --platform manylinux2014_x86_64 -t python/
 
       - name: Clean up unnecessary files
         run: |

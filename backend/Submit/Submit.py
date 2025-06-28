@@ -38,11 +38,10 @@ def lambda_handler(event, context):
         cursor = conn.cursor()
         for part in multipart_data.parts:
             print(f"Processing part: {part.headers.get(b'Content-Disposition')}")
-            filename = part.headers.get(b'Content-Disposition').decode().split('filename="')[1].split('"')[0]
             file_stream = io.BytesIO(part.content)
             file_stream.seek(0)
             file_id = str(uuid.uuid4())
-            s3_key = f"raw_data/{file_id}-{filename.replace(' ', '_').replace('/', '_')}"
+            s3_key = f"raw_data/{file_id}"
             # Upload to S3
             s3.put_object(
                 Bucket=BUCKET_NAME,

@@ -1,6 +1,7 @@
 import boto3
 import sys
 import time
+import os
 
 GITHUB_PAT = os.getenv("GITHUB_PAT")
 if not GITHUB_PAT:
@@ -11,7 +12,8 @@ branch = sys.argv[2]
 repo_owner, repo_name = repo_full.split('/')
 app_name = f"amplify-{repo_name}"
 
-client = boto3.client('amplify')
+client = boto3.client('amplify','us-east-1')
+print(GITHUB_PAT)
 
 # Create Amplify App
 app_response = client.create_app(

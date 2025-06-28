@@ -19,9 +19,15 @@ def lambda_handler(event, context):
             print(f"Processing file: {key}")
             # Extract .json inside the tar.gz
             with tarfile.open(fileobj=tar_bytes, mode='r:gz') as tar:
+                print(f"Extracting files from tar: {key}")
                 for member in tar.getmembers():
+                    print(f"Found member: {member.name}")
                     if member.name == "output" and member.isfile():
+                        print(f"Extracting JSON file: {member.name}")
                         file = tar.extractfile(member)
+                        if not file:
+                            print(f"File {member.name} not found in tar.")
+                            continue
                         results = json.load(file)
                         print(f"Extracted JSON: {results}")
                         break

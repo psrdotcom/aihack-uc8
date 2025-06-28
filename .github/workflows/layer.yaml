@@ -62,3 +62,27 @@ jobs:
         with:
           name: lambda-layer
           path: layer.zip
+      
+      - name: Get latest layer version ARN
+        id: get-layer-version
+        run: |
+          LAYER_ARN=$(aws lambda list-layer-versions --layer-name ${{ env.LAYER_NAME }} \
+            --query 'LayerVersions[0].LayerVersionArn' --output text)
+          echo "layer_arn=$LAYER_ARN" >> "$GITHUB_OUTPUT"
+
+      - name: List functions using the layer
+        id: list-functions
+        run: |
+          FUNCTIONS=$(aws lambda list-functions --query \
+            "Functions[?Layers && contains(join(',', Layers[].Arn), '${{ env.LAYER_NAME }}')].FunctionName" \
+            --output text)
+          echo "functions=$FUNCTIONS" >> "$GITHUB_OUTPUT"
+
+      - name: Update functions to use latest layer version
+        run: |
+          for function in ${{ steps.list-functions.outputs.functions }}; do
+            echo "Updating $function..."
+            aws lambda update-function-configuration \
+              --function-name "$function" \
+              --layers ${{ steps.get-layer-version.outputs.layer_arn }}
+          done

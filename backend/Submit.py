@@ -30,6 +30,9 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS articles (
                         sentiment TEXT
                     )""")
 cursor.execute("""
+                drop table if exists comprehend_jobs
+""")
+cursor.execute("""
                 CREATE TABLE IF NOT EXISTS comprehend_jobs (
                     article_id TEXT,
                     input_s3_uri TEXT,
@@ -92,9 +95,7 @@ for index, row in input_csv.iterrows():
     print("Entities Job Response:", entities_output)
     print("Sentiment Job Response:", sentiment_output)
     print("Key Phrases Job Response:", key_phrases_output)
-    cursor.execute("""
-                   drop table if exists comprehend_jobs
-    """)
+
    
     print("Inserting into comprehend_jobs table")
     cursor.execute("""

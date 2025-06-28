@@ -53,13 +53,13 @@ def lambda_handler(event, context):
                         entity_array = result['Entities']
                         if entity_array:
                             ## get the entities from the entities table
-                            add_entities_to_article(cursor, article_id, entity_array)
+                            add_entities_to_article(conn, cursor, article_id, entity_array)
                     elif type == 'keyphrases':
                         keyPhrases_array = result['KeyPhrases']
                         if keyPhrases_array:
                             for keyPhrase in keyPhrases_array:
                                 keyPhrase['Type'] = 'KeyPhrase'
-                            add_entities_to_article(cursor, article_id, keyPhrases_array)
+                            add_entities_to_article(conn, cursor, article_id, keyPhrases_array)
                     elif type == 'sentiment':
                         sentiment = result.get('Sentiment', 'NEUTRAL')
                         if sentiment:
@@ -76,7 +76,7 @@ def lambda_handler(event, context):
             'body': json.dumps({'error': str(e)})
         }
 
-def add_entities_to_article(cursor, article_id, entities):
+def add_entities_to_article(conn, cursor, article_id, entities):
     entities_text = [entity['Text'] for entity in entities]
     print(f"Entities to be added: {entities_text}")
     cursor.execute("SELECT * FROM entities WHERE entity in %s", (tuple(entities_text),))
@@ -90,11 +90,12 @@ def add_entities_to_article(cursor, article_id, entities):
     print(f"Relevance category: {relevance_category}")
     for entity in entities:
         print(f"Processing entity: {entity}")
-        entity_in_db = [db_entity for db_entity in entity_db_array if db_entity[3] == entity['Text']]
+        entity_in_db = [db_entity for db_entity in entity_db_array if db_entity[3].lower() == entity['Text'].lower()]
         print(f"Entity in DB: {entity_in_db}")
         if not entity_in_db:
             current_time = datetime.datetime.utcnow()
             cursor.execute("INSERT INTO entities (create_time,entity,type) VALUES (%s, %s, %s) RETURNING id", (current_time, entity['Text'], entity['Type']))
+            conn.commit()
             db_entity = cursor.fetchone()
             print(f"Inserted new entity: {db_entity}")
             if entity['Type'] == 'LOCATION':

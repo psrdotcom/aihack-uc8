@@ -1,0 +1,10 @@
+{
+  "apiName": "hackathon",
+  "resourcePath": "query/agent",
+  "method": {
+    "httpMethod": "POST",
+    "authorizationType": "NONE",
+    "lambdaFunctionName": "web_api"
+  },
+  "deploy": true
+}

@@ -5,8 +5,8 @@ import uuid
 from fastapi import FastAPI, Depends, HTTPException, Response
 from sqlmodel import Session, select
 
-from database import get_session, create_db_and_tables
-from models import Articles, ArticleCreate, ArticleRead, Clusters, ClusterCreate, ClusterRead
+from .database import get_session
+from .models import Articles, ArticleCreate, ArticleRead, Clusters, ClusterCreate, ClusterRead
 from typing import List, Dict, Any
 
 from contextlib import asynccontextmanager, closing
@@ -14,7 +14,8 @@ from contextlib import asynccontextmanager, closing
 
 # from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field
-from psycopg2 import connect, ProgrammingError
+from psycopg2 import ProgrammingError
+import psycopg2
 from contextlib import closing
 from mangum import Mangum
 
@@ -22,7 +23,7 @@ from mangum import Mangum
 # from bedrock_agent import generate_sql_from_prompt
 
 # Import our new agent invoker function
-from bedrock_agent_invoke import invoke_bedrock_agent_to_get_sql
+from .bedrock_agent_invoke import invoke_bedrock_agent_to_get_sql
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
@@ -33,13 +34,17 @@ load_dotenv()
 AGENT_ID = os.environ.get("BEDROCK_AGENT_ID")
 AGENT_ALIAS_ID = os.environ.get("BEDROCK_AGENT_ALIAS_ID", "TSTALIASID") # TSTALIASID is a common default
 
-app = FastAPI()
+app = FastAPI(
+    title="FastAPI with Bedrock Agents",
+    redirect_slashes=True,
+)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Application startup...")
     yield
     print("Application shutdown...")
+    # pool.close()
 
 
 # This event handler runs once when the application starts.
@@ -119,12 +124,11 @@ class NaturalLanguageQuery(BaseModel):
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://your_user:your_password@your_aurora_endpoint/myappdb")
 
 def get_db_connection():
-    with connect(DATABASE_URL) as conn:
+    conn = psycopg2.connect(DATABASE_URL)
+    try:
         yield conn
-
-app = FastAPI(
-    title="FastAPI with Bedrock Agents"
-)
+    finally:
+        conn.close()
 
 @app.post("/query/agent", response_model=List[Dict[str, Any]])
 def query_with_bedrock_agent(query: NaturalLanguageQuery, conn=Depends(get_db_connection)):

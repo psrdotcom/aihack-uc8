@@ -9,3 +9,6 @@ python-dotenv
 requests_toolbelt
 sqlmodel
 psycopg2-binary==2.9.9
+mangum
+# psycopg[binary]      # The modern v3 driver
+# psycopg-pool         # The connection pool for v3

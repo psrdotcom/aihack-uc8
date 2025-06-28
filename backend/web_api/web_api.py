@@ -130,7 +130,7 @@ def get_db_connection():
     finally:
         conn.close()
 
-@app.post("/query/agent", response_model=List[Dict[str, Any]])
+@app.post("/queryagent", response_model=List[Dict[str, Any]])
 def query_with_bedrock_agent(query: NaturalLanguageQuery, conn=Depends(get_db_connection)):
     """
     Takes a natural language question, sends it to a pre-configured Bedrock Agent,

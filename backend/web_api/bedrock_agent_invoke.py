@@ -68,58 +68,59 @@ def invoke_bedrock_agent_to_get_sql(
         all_events = []
 
         # Collect all events for post-processing
-        for event in event_stream:
-            all_events.append(event)
-            if 'trace' in event:
-                trace_part = event['trace']['trace']
-                if 'observation' in trace_part:
-                    observation = trace_part['observation']
-                    # If observation is a list, iterate through it
-                    if isinstance(observation, list):
-                        for obs in observation:
-                            if 'finalResponse' in obs:
-                                final_response = obs['finalResponse']
-                                text = final_response.get('text', '')
-                                # Extract SQL from markdown code block if present
-                                if '```sql' in text:
-                                    sql_start = text.find('```sql') + len('```sql')
-                                    sql_end = text.find('```', sql_start)
-                                    final_sql_query = text[sql_start:sql_end].strip()
-                                else:
-                                    final_sql_query = text.strip()
-                                print(f"Extracted SQL from finalResponse: {final_sql_query}")
-                                break
-                    # If observation is a dict, handle as before
-                    elif isinstance(observation, dict):
-                        if 'finalResponse' in observation:
-                            final_response = observation['finalResponse']
-                            text = final_response.get('text', '')
-                            if '```sql' in text:
-                                sql_start = text.find('```sql') + len('```sql')
-                                sql_end = text.find('```', sql_start)
-                                final_sql_query = text[sql_start:sql_end].strip()
-                            else:
-                                final_sql_query = text.strip()
-                            print(f"Extracted SQL from finalResponse: {final_sql_query}")
-                            break
-                        if 'actionGroupInvocationOutput' in observation:
-                            output_str = observation['actionGroupInvocationOutput']['text']
-                            try:
-                                output_json = json.loads(output_str)
-                                if 'generatedQuery' in output_json:
-                                    final_sql_query = output_json['generatedQuery']
-                                    print(f"Extracted SQL from Agent trace: {final_sql_query}")
-                                    break
-                            except json.JSONDecodeError:
-                                print(f"Could not decode observation output: {output_str}")
+        # for event in event_stream:
+        #     all_events.append(event)
+        #     if 'trace' in event:
+        #         trace_part = event['trace']['trace']
+        #         if 'observation' in trace_part:
+        #             observation = trace_part['observation']
+        #             # If observation is a list, iterate through it
+        #             if isinstance(observation, list):
+        #                 for obs in observation:
+        #                     if 'finalResponse' in obs:
+        #                         final_response = obs['finalResponse']
+        #                         text = final_response.get('text', '')
+        #                         # Extract SQL from markdown code block if present
+        #                         if '```sql' in text:
+        #                             sql_start = text.find('```sql') + len('```sql')
+        #                             sql_end = text.find('```', sql_start)
+        #                             final_sql_query = text[sql_start:sql_end].strip()
+        #                         else:
+        #                             final_sql_query = text.strip()
+        #                         print(f"Extracted SQL from finalResponse: {final_sql_query}")
+        #                         break
+        #             # If observation is a dict, handle as before
+        #             elif isinstance(observation, dict):
+        #                 if 'finalResponse' in observation:
+        #                     final_response = observation['finalResponse']
+        #                     text = final_response.get('text', '')
+        #                     if '```sql' in text:
+        #                         sql_start = text.find('```sql') + len('```sql')
+        #                         sql_end = text.find('```', sql_start)
+        #                         final_sql_query = text[sql_start:sql_end].strip()
+        #                     else:
+        #                         final_sql_query = text.strip()
+        #                     print(f"Extracted SQL from finalResponse: {final_sql_query}")
+        #                     break
+        #                 if 'actionGroupInvocationOutput' in observation:
+        #                     output_str = observation['actionGroupInvocationOutput']['text']
+        #                     try:
+        #                         output_json = json.loads(output_str)
+        #                         if 'generatedQuery' in output_json:
+        #                             final_sql_query = output_json['generatedQuery']
+        #                             print(f"Extracted SQL from Agent trace: {final_sql_query}")
+        #                             break
+        #                     except json.JSONDecodeError:
+        #                         print(f"Could not decode observation output: {output_str}")
 
         # Fallback: check for chunk events if not found
-        if not final_sql_query:
-            for event in all_events:
-                if 'chunk' in event:
-                    raw_bytes = event['chunk']['bytes']
-                    print(f"Raw chunk bytes: {raw_bytes!r}")
-                    if raw_bytes:
+        for event in all_events:
+            if 'chunk' in event:
+                raw_bytes = event['chunk']['bytes']
+                print(f"Raw chunk bytes: {raw_bytes!r}")
+                if raw_bytes:
+                    try:
+                        # Try to decode as JSON, but if it fails, treat as plain text
                         try:
                             data = json.loads(raw_bytes.decode())
                             if data.get('type') == 'finalResponse':
@@ -132,10 +133,22 @@ def invoke_bedrock_agent_to_get_sql(
                                     final_sql_query = text.strip()
                                 print(f"Extracted SQL from chunk finalResponse: {final_sql_query}")
                                 break
-                        except Exception as e:
-                            print(f"Error decoding chunk: {e}")
-                    else:
-                        print("Chunk bytes are empty, skipping.")
+                        except json.JSONDecodeError:
+                            # Not JSON, treat as plain text
+                            text = raw_bytes.decode()
+                            if '```sql' in text:
+                                sql_start = text.find('```sql') + len('```sql')
+                                sql_end = text.find('```', sql_start)
+                                final_sql_query = text[sql_start:sql_end].strip()
+                            else:
+                                final_sql_query = text.strip()
+                            print(f"Extracted SQL from plain text chunk: {final_sql_query}")
+                            break
+                    except Exception as e:
+                        print(f"Error decoding chunk: {e}")
+                else:
+                    print("Chunk bytes are empty, skipping.")
+        # if not final_sql_query:
 
         return final_sql_query
 

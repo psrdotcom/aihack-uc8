@@ -14,7 +14,9 @@ def lambda_handler(event, context):
             print(f"Processing file from bucket: {bucket}, key: {key}")
             conn = get_postgresql_connection()
             s3 = boto3.client('s3')
+            print(f"Connecting to S3 bucket: {bucket}")
             obj = s3.get_object(Bucket=bucket, Key=key)
+            print(f"Downloaded object from S3: {key}")
             tar_bytes = io.BytesIO(obj['Body'].read())
             print(f"Processing file: {key}")
             # Extract .json inside the tar.gz

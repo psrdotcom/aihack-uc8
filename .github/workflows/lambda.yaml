@@ -80,7 +80,8 @@ jobs:
               aws lambda update-function-code \
                 --function-name "$function_name" \
                 --s3-bucket "$DEPLOY_BUCKET" \
-                --s3-key "${function_name}.zip"
+                --s3-key "${function_name}.zip" \
+                --layers arn:aws:lambda:us-east-1:269854564686:layer:my-python-layer:2
             else
               echo "Creating Lambda function: $function_name"
               aws lambda create-function \

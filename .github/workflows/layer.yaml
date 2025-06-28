@@ -12,7 +12,7 @@ jobs:
 
     env:
       LAYER_NAME: my-python-layer
-      PYTHON_VERSION: python3.9
+      PYTHON_VERSION: python3.12
       S3_KEY: layers/layer.zip
 
     steps:
@@ -22,7 +22,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.12'
 
       - name: Install dependencies to python/
         run: |

@@ -35,7 +35,7 @@ jobs:
       - name: Deploy Lambda Functions (No dependencies)
         run: |
           LAYER_ARN=$(aws lambda list-layer-versions \
-            --layer-name my-python-layer" \
+            --layer-name "my-python-layer" \
             --query 'LayerVersions[0].LayerVersionArn' \
             --output text)
 

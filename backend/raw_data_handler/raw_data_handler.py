@@ -50,12 +50,6 @@ def lambda_handler(event, context):
                         VALUES (%s, %s, %s, %s, %s)""", (article_id, article['Title'], article['Content'], article['Source'], article['Date']))
                 # Upload to S3
                 print(f"Uploading CSV to S3: {csv_filename}")
-                # s3.put_object(
-                #     Bucket=BUCKET_NAME,
-                #     Key=csv_filename,
-                #     Body=output_csv.getvalue(),
-                #     ContentType='text/csv'
-                # )
                 conn.commit() 
                 get_data_inline(output_csv.getvalue(), article_id, article['Date'], comprehend, cursor, conn)
         cursor.close()
@@ -124,29 +118,7 @@ def extract_articles(file_stream):
 def add_keyphrase_to_article(conn, cursor, article_id, article_date, entities):
     entities_text = [entity['Text'] for entity in entities]
     print(f"Entities to be added: {entities_text}")
-    # cursor.execute("SELECT * FROM keyphrases WHERE phrases in %s", (tuple(entities_text),))
-    # entity_db_array = cursor.fetchall()
-    # print(f"Entities in DB: {entity_db_array}")
-    # relevance_category = []
     print(f"article_id: {article_id}")
-    # for entity in entities:
-    #     print(f"Processing entity: {entity}")
-    #     entity_in_db = [db_entity for db_entity in entity_db_array if db_entity[2].lower() == entity['Text'].lower()]
-    #     print(f"Entity in DB: {entity_in_db}")
-    #     if not entity_in_db:
-    #         cursor.execute("INSERT INTO keyphrases (start_datetime,phrases) VALUES (%s, %s) RETURNING id", (article_date, entity['Text']))
-    #         conn.commit()
-    #         db_entity = cursor.fetchone()
-    #         print(f"Inserted new entity: {db_entity}")
-    #         relevance_category.append(db_entity[0])
-    #     else:
-    #         print(f"Entity already exists in DB: {entity_in_db}")
-    #         cursor.execute("""UPDATE keyphrases SET linkedtimelines = 
-    #     CASE 
-    #         WHEN linkedtimelines IS NULL OR linkedtimelines = '' THEN %s
-    #         ELSE linkedtimelines || ', ' || %s
-    #     END WHERE id = %s""", (article_date, article_date, entity_in_db[0][0]))
-    #         relevance_category.append(entity_in_db[0][0])
     if entities_text:
         relevance_category = ','.join(map(str, entities_text))
         cursor.execute("""update articles set relevance_category = %s where article_id = %s""", (relevance_category, article_id))
@@ -154,34 +126,9 @@ def add_keyphrase_to_article(conn, cursor, article_id, article_date, entities):
 def add_entities_to_article(conn, cursor, article_id, entities):
     entities_text = [entity['Text'] for entity in entities]
     print(f"Entities to be added: {entities_text}")
-    # cursor.execute("SELECT * FROM entities WHERE entity in %s", (tuple(entities_text),))
-    # entity_db_array = cursor.fetchall()
-    # print(f"Entities in DB: {entity_db_array}")
     location_mentions = []
     officials_involved = []
-    # relevance_category = []
     print(f"article_id: {article_id}")
-    
-    # for entity in entities:
-    #     print(f"Processing entity: {entity}")
-    #     entity_in_db = [db_entity for db_entity in entity_db_array if db_entity[3].lower() == entity['Text'].lower()]
-    #     print(f"Entity in DB: {entity_in_db}")
-    #     if not entity_in_db:
-    #         current_time = datetime.datetime.utcnow()
-    #         cursor.execute("INSERT INTO entities (create_time,entity,type) VALUES (%s, %s, %s) RETURNING id", (current_time, entity['Text'], entity['Type']))
-    #         conn.commit()
-    #         db_entity = cursor.fetchone()
-    #         print(f"Inserted new entity: {db_entity}")
-    #         if entity['Type'] == 'LOCATION':
-    #             location_mentions.append(db_entity[0])
-    #         elif entity['Type'] == 'PERSON' or entity['Type'] == 'ORGANIZATION':
-    #             officials_involved.append(db_entity[0])
-    #     else:
-    #         print(f"Entity already exists in DB: {entity_in_db}")
-    #         if entity['Type'] == 'LOCATION':
-    #             location_mentions.append(entity_in_db[0][0])
-    #         elif entity['Type'] == 'PERSON' or entity['Type'] == 'ORGANIZATION':
-    #             officials_involved.append(entity_in_db[0][0])
     for entity in entities:
         if entity['Type'] == 'LOCATION':
             location_mentions.append(entity['Text'].lower())

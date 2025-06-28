@@ -4,7 +4,7 @@ import pandas as pd
 import boto3
 import time
 import uuid
-from Utils import get_postgresql_connection
+from ..Utils import get_postgresql_connection
 def lambda_handler(event, context):
     comprehend = boto3.client('comprehend')
     s3 = boto3.client('s3')

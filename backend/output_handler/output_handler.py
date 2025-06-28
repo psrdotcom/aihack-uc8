@@ -6,54 +6,61 @@ from Utils import get_postgresql_connection
 import datetime
 
 def lambda_handler(event, context):
-    for record in event['Records']:
-        print(f"New record: {record}")
-        bucket = record['s3']['bucket']['name']
-        key = record['s3']['object']['key']
-        conn = get_postgresql_connection()
-        s3 = boto3.client('s3')
-        obj = s3.get_object(Bucket=bucket, Key=key)
-        tar_bytes = io.BytesIO(obj['Body'].read())
+    try:
+        for record in event['Records']:
+            print(f"New record: {record}")
+            bucket = record['s3']['bucket']['name']
+            key = record['s3']['object']['key']
+            conn = get_postgresql_connection()
+            s3 = boto3.client('s3')
+            obj = s3.get_object(Bucket=bucket, Key=key)
+            tar_bytes = io.BytesIO(obj['Body'].read())
 
-        # Extract .json inside the tar.gz
-        with tarfile.open(fileobj=tar_bytes, mode='r:gz') as tar:
-            for member in tar.getmembers():
-                if member.name == "output" and member.isfile():
-                    file = tar.extractfile(member)
-                    results = json.load(file)
-                    print(f"Extracted JSON: {results}")
-                    break
+            # Extract .json inside the tar.gz
+            with tarfile.open(fileobj=tar_bytes, mode='r:gz') as tar:
+                for member in tar.getmembers():
+                    if member.name == "output" and member.isfile():
+                        file = tar.extractfile(member)
+                        results = json.load(file)
+                        print(f"Extracted JSON: {results}")
+                        break
 
-        if not results:
-            folderSplit = key.split('/')
-            type = folderSplit[0]
-            cursor = conn.cursor()
-            query = "SELECT * FROM comprehend_jobs WHERE entities_path = %s or sentiment_path = %s or key_phrases_path = %s"
-            cursor.execute(query, (key, key, key))
-            row = cursor.fetchone()
-            if row:
-                article_id = row['article_id']
-                for result in results:
-                    if type == 'entities':
-                        entity_array = result['Entities']
-                        if not entity_array:
-                            ## get the entities from the entities table
-                            add_entities_to_article(cursor, article_id, entity_array)
-                    elif type == 'keyphrases':
-                        keyPhrases_array = result['KeyPhrases']
-                        if not keyPhrases_array:
-                            for keyPhrase in keyPhrases_array:
-                                keyPhrase['Type'] = 'KeyPhrase'
-                            add_entities_to_article(cursor, article_id, keyPhrases_array)
-                    elif type == 'sentiment':
-                        sentiment = result.get('Sentiment', 'NEUTRAL')
-                        if not sentiment:
-                            cursor.execute("""update articles set sentiment = %s where articles_id = %s""", (sentiment, article_id))
-            cursor.close()
-            ## delete the s3 object
-            s3.delete_object(Bucket=bucket, Key=result['input_s3_uri'])
-            # s3.delete_object(Bucket=bucket, Key=key)
-            conn.close()
+            if not results:
+                folderSplit = key.split('/')
+                type = folderSplit[0]
+                cursor = conn.cursor()
+                query = "SELECT * FROM comprehend_jobs WHERE entities_path = %s or sentiment_path = %s or key_phrases_path = %s"
+                cursor.execute(query, (key, key, key))
+                row = cursor.fetchone()
+                if row:
+                    article_id = row['article_id']
+                    for result in results:
+                        if type == 'entities':
+                            entity_array = result['Entities']
+                            if not entity_array:
+                                ## get the entities from the entities table
+                                add_entities_to_article(cursor, article_id, entity_array)
+                        elif type == 'keyphrases':
+                            keyPhrases_array = result['KeyPhrases']
+                            if not keyPhrases_array:
+                                for keyPhrase in keyPhrases_array:
+                                    keyPhrase['Type'] = 'KeyPhrase'
+                                add_entities_to_article(cursor, article_id, keyPhrases_array)
+                        elif type == 'sentiment':
+                            sentiment = result.get('Sentiment', 'NEUTRAL')
+                            if not sentiment:
+                                cursor.execute("""update articles set sentiment = %s where articles_id = %s""", (sentiment, article_id))
+                cursor.close()
+                ## delete the s3 object
+                s3.delete_object(Bucket=bucket, Key=result['input_s3_uri'])
+                # s3.delete_object(Bucket=bucket, Key=key)
+                conn.close()
+    except Exception as e:
+        print(f"Error processing record: {e}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': str(e)})
+        }
 
 def add_entities_to_article(cursor, article_id, entities):
     entities_text = [entity['Text'] for entity in entities]

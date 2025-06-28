@@ -67,22 +67,28 @@ def lambda_handler(event, context):
         conn.close()
         return {"statusCode": 200, "status": "success", "count": len(articles), "data": articles, "s3_urls": s3_urls}
     except Exception as e:
+        traceback.print_exc() 
         return {"statusCode": 500, "body": f"❌ Error: {str(e)}"}
 
 def extract_articles(file_stream):
+    print(f"Extracting articles from file stream")
     doc = Document(file_stream)
+    print(f"Document loaded with {len(doc.paragraphs)} paragraphs")
     text = "\n".join(p.text for p in doc.paragraphs)
     pattern = re.compile(
         r'Title:\s*(.*?)\s*Source:\s*(.*?)\s*Date:\s*(.*?)\s*(?=(?:\d{1,2}\)|Title:)|\Z)',
         re.DOTALL
     )
     matches = pattern.findall(text)
+    print(f"Found {len(matches)} matches in the document")
     articles = []
     for match in matches:
+        print(f"Processing match: {match}")
         title = match[0].strip()
         source = match[1].strip()
         date_parts = match[2].strip().split("\n", 1)
         date = date_parts[0].strip()
         content = date_parts[1].strip() if len(date_parts) > 1 else ""
+        print(f"Extracted article - Title: {title}, Source: {source}, Date: {date}, Content length: {len(content)}")
         articles.append([title, source, date, content])
     return articles

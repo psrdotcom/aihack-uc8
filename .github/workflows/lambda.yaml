@@ -1,0 +1,95 @@
+name: Deploy Lambdas
+
+on:
+  push:
+    branches:
+      - main
+      - backend_changes
+
+env:
+  LAMBDA_DIR: backend
+  DEPLOY_BUCKET: hackathon-lambda-ap-ai-cyberark
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install AWS CLI
+        run: pip install awscli
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: AKIAT5VEV4FHFQQJBZVX
+          aws-secret-access-key: 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
+          aws-region: us-east-1
+
+      - name: Deploy Lambda Functions (No dependencies)
+        run: |
+          LAYER_ARN=$(aws lambda list-layer-versions \
+            --layer-name "my-python-layer" \
+            --query 'LayerVersions[0].LayerVersionArn' \
+            --output text)
+
+          echo "Using latest layer version: $LAYER_ARN"
+          for dir in "$LAMBDA_DIR"/*/; do
+            dir=${dir%/}
+            function_name=$(basename "$dir")
+            entry_point="$dir/${function_name}.py"
+
+            if [ ! -f "$entry_point" ]; then
+              echo "Skipping $function_name: $entry_point not found."
+              continue
+            fi
+
+            echo "Packaging Lambda: $function_name"
+
+            build_dir="/tmp/${function_name}_build"
+            zip_file="/tmp/${function_name}.zip"
+
+            rm -rf "$build_dir"
+            mkdir -p "$build_dir"
+
+            # Copy Lambda source file
+            cp -r "$dir"/* "$build_dir/"
+
+            # Copy all top-level shared files from backend (excluding directories and requirements.txt)
+            find "$LAMBDA_DIR" -maxdepth 1 -type f ! -name "requirements.txt" -exec cp {} "$build_dir/" \;
+
+            # Zip build directory
+            cd "$build_dir"
+            zip -r "$zip_file" . > /dev/null
+            cd -
+
+            # Upload zip to S3
+            aws s3 cp "$zip_file" "s3://${DEPLOY_BUCKET}/${function_name}.zip"
+
+            # Deploy Lambda
+            if aws lambda get-function --function-name "$function_name" > /dev/null 2>&1; then
+              echo "Updating Lambda: $function_name"
+              aws lambda update-function-code \
+                --function-name "$function_name" \
+                --s3-bucket "$DEPLOY_BUCKET" \
+                --s3-key "${function_name}.zip"
+            else
+              echo "Creating Lambda: $function_name"
+              aws lambda create-function \
+                --function-name "$function_name" \
+                --runtime python3.12 \
+                --role "arn:aws:iam::269854564686:role/hackathon-lambda-role" \
+                --handler "${function_name}.lambda_handler" \
+                --code S3Bucket="$DEPLOY_BUCKET",S3Key="${function_name}.zip" \
+                --timeout 900 \
+                --vpc-config SubnetIds=subnet-02e62e34308bb07d5,subnet-0534b99dd34e646f1,SecurityGroupIds=sg-0b9a6b812b30a1107 \
+                --layers "$LAYER_ARN"
+            fi
+          done

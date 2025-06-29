@@ -1,7 +1,5 @@
 import json
 import psycopg2
-from psycopg2 import sql
-
 def get_postgresql_connection():
     '''get the creds from local config'''
 

@@ -1,0 +1,88 @@
+name: Build Lambda Layer
+
+on:
+  push:
+    paths:
+      - 'backend/requirements.txt'
+  workflow_dispatch:
+
+jobs:
+  build-and-publish-layer:
+    runs-on: ubuntu-latest
+
+    env:
+      LAYER_NAME: my-python-layer
+      PYTHON_VERSION: python3.12
+      S3_KEY: layers/layer.zip
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies to python/
+        run: |
+          mkdir -p python
+          pip install -r backend/requirements.txt --platform manylinux2014_x86_64 --only-binary=:all: -t python/
+
+      - name: Clean up unnecessary files
+        run: |
+          find python/ -type d -name "__pycache__" -exec rm -rf {} +
+          find python/ -type d -name "tests" -exec rm -rf {} +
+          find python/ -type f -name "*.pyc" -delete
+
+      - name: Zip the layer
+        run: zip -r layer.zip python
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: AKIAT5VEV4FHFQQJBZVX
+          aws-secret-access-key: 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
+          aws-region: us-east-1
+
+      - name: Upload zip to S3
+        run: |
+          aws s3 cp layer.zip s3://hackathon-lambda-ap-ai-cyberark/${{ env.S3_KEY }}
+
+      - name: Publish Lambda Layer from S3
+        run: |
+          aws lambda publish-layer-version \
+            --layer-name ${{ env.LAYER_NAME }} \
+            --description "Dependencies from backend/requirements.txt" \
+            --content S3Bucket=hackathon-lambda-ap-ai-cyberark,S3Key=${{ env.S3_KEY }} \
+            --compatible-runtimes ${{ env.PYTHON_VERSION }}
+
+      - name: Upload artifact (optional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-layer
+          path: layer.zip
+      
+      - name: Get latest layer version ARN
+        id: get-layer-version
+        run: |
+          LAYER_ARN=$(aws lambda list-layer-versions --layer-name ${{ env.LAYER_NAME }} \
+            --query 'LayerVersions[0].LayerVersionArn' --output text)
+          echo "layer_arn=$LAYER_ARN" >> "$GITHUB_OUTPUT"
+
+      - name: List functions using the layer
+        id: list-functions
+        run: |
+          FUNCTIONS=$(aws lambda list-functions --query \
+            "Functions[?Layers && contains(join(',', Layers[].Arn), '${{ env.LAYER_NAME }}')].FunctionName" \
+            --output text)
+          echo "functions=$FUNCTIONS" >> "$GITHUB_OUTPUT"
+
+      - name: Update functions to use latest layer version
+        run: |
+          for function in ${{ steps.list-functions.outputs.functions }}; do
+            echo "Updating $function..."
+            aws lambda update-function-configuration \
+              --function-name "$function" \
+              --layers ${{ steps.get-layer-version.outputs.layer_arn }}
+          done

@@ -1,0 +1,10 @@
+{
+  "apiName": "hackathon",
+  "resourcePath": "getfeed",
+  "method": {
+    "httpMethod": "GET",
+    "authorizationType": "NONE",
+    "lambdaFunctionName": "get_feed"
+  },
+  "deploy": true
+}

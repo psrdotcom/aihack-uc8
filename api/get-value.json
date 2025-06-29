@@ -1,0 +1,10 @@
+{
+  "apiName": "hackathon",
+  "resourcePath": "get-value",
+  "method": {
+    "httpMethod": "GET",
+    "authorizationType": "NONE",
+    "lambdaFunctionName": "Submit"
+  },
+  "deploy": true
+}

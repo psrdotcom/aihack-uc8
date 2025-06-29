@@ -2,9 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { DataTable } from "./table/data-table";
-import { columns, type GroupedCategory } from "./table/columns";
+import { columns, type Article } from "./table/columns";
 import { useEffect, useRef, useState } from "react";
-import { GetArticles } from "./GetArticles";
 import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationLink, PaginationNext } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -40,12 +39,13 @@ function renderSkeletonTable() {
 }
 
 export default function Search() {
-    const [data, setData] = useState<GroupedCategory[]>([]);
+    const [dataState, setDataState] = useState<Article[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [total, setTotal] = useState(0);
     const [, setRowSelection] = useState<Record<string, unknown>>({});
+    const API_BASE_URL = import.meta.env.VITE_API_UPLOAD_URL || "";
 
     let componentRef = useRef(null);
 
@@ -55,12 +55,43 @@ export default function Search() {
         onPrintError: () => alert("there is an error when printing"),
     });
 
-    const fetchData = async (pageNum = page, size = pageSize) => {
+    const fetchFeedList = async () => {
+        const response = await fetch(`http://localhost:3001/GetFeed`);
+        // const response = await fetch(`${API_BASE_URL}/getfeed`);
+        const data = await response.json();
+        console.log(data);
+        return data as Article[];
+    }
+
+    // const { isFetching, isError, data, error } = useQuery({
+    //     queryKey: ['feed'],
+    //     queryFn: fetchFeedList,
+    //     refetchOnWindowFocus: false,
+    //     refetchOnReconnect: false,
+    //     refetchOnMount: false, // or 'always'/'false' as needed
+    //     staleTime: 1000 * 60 * 5, // 5 minutes, adjust as needed
+    // })
+
+
+    const fetchData = async (page: any, pageSize: any) => {
+        // setLoading(true);
+        // const result = await GetArticles({ page: pageNum, pageSize: size });
+        // setDataState(result.data);
+        // setTotal(result.total);
+        // setLoading(false);
         setLoading(true);
-        const result = await GetArticles({ page: pageNum, pageSize: size });
-        setData(result.data);
-        setTotal(result.total);
+        const data = await fetchFeedList();
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        const result = data?.slice(start, end) ?? [];
+        
         setLoading(false);
+        setDataState(result);
+        setTotal(data?.length ?? 0);
+        return {
+            data: result,
+            total: data?.length ?? 0
+        };
     };
 
     useEffect(() => {
@@ -73,16 +104,10 @@ export default function Search() {
     return (
         <div className="p-8 max-w-full overflow-x-auto gap-8" ref={componentRef}>
             <div className="flex flex-col md:flex-row items-center gap-4 print-hidden mb-4">
-                <Textarea className="flex-[8] min-h-[56px]" placeholder="Please type here for additional search criteria..."/>
+                <Textarea className="flex-[8] min-h-[56px]" placeholder="Please type here for additional search criteria..." />
                 <div className="flex-1 flex justify-end">
                     <Button onClick={() => fetchData(page, pageSize)} className="w-auto m-2">Submit</Button>
                     <Button onClick={handlePrint} className="w-auto m-2">Print</Button>
-                    {/* <button
-                        onClick={handlePrint}
-                        className="bg-cyan-500 px-6 py-2 text-white border border-cyan-500 font-bold rounded-md mb-3 w-full lg:w-fit my-6 max-w-sm"
-                    >
-                        Print Payslip
-                    </button> */}
                 </div>
             </div>
             <div className="grid col-span-12">
@@ -92,7 +117,7 @@ export default function Search() {
                     renderSkeletonTable()
                     :
                     <div>
-                        <DataTable columns={columns} data={data} onRowSelectionChange={setRowSelection} />
+                        <DataTable columns={columns} data={dataState} onRowSelectionChange={setRowSelection} />
                         {/* You can use rowSelection here as needed, e.g., for debugging: */}
 
                         <div className="flex items-center justify-between mt-4 print-hidden">

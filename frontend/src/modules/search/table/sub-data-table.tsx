@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { Row } from "@tanstack/react-table";
 import {
     Table,
@@ -13,30 +14,50 @@ import {
 interface Article {
     article_id?: string;
     title?: string;
-    link?: string;
-    creator?: string[] | null;
-    description?: string;
-    pubDate?: string;
-    image_url?: string;
-    source_name?: string;
-    language?: string;
-    country?: string[];
-    category?: string[];
+    body?: string;
+    source?: string;
+    published_date?: string;
+    location_mentions?: string;
+    officials_involved?: string;
+    relevance_category?: string;
     sentiment?: string;
+    linked_id?: string;
     // ...other properties can be added as needed
 }
 
 type SubDataTableProps<TData> = {
     row: Row<TData> | null;
+    originalData?: TData[] | null; // Optional prop to pass original data
 };
 
-export default function SubDataTable<TData>({ row }: SubDataTableProps<TData>) {
-    //   const isOpen = row.getIsExpanded();
+export default function SubDataTable<TData>({ row, originalData }: SubDataTableProps<TData>) {
+    const [articles, setArticles] = useState<Article[]>([]);
+    console.log("SubDataTable rendered with row:", row);
     if (!row) return <div>No data available</div>;
 
-    // Try to get articles from the row's original data
     // @ts-ignore
-    const articles: Article[] = row.original.articles || [];
+    const rowSpecificData = row.original as Article;
+    console.log("Row specific data:", rowSpecificData);
+
+    useEffect(() => {
+        // Robustly parse linked_id and match article_id as strings
+        const linkedIds = (rowSpecificData?.linked_id ?? "")
+            .replace(/[{}\s'\"]/g, "") // remove braces, spaces, quotes
+            .split(",")
+            .map((id) => id.trim())
+            .filter((id) => id.length > 0);
+        console.log("Linked IDs (effect):", linkedIds);
+        const foundArticles: Article[] = ((originalData as Article[] | undefined) || []).filter((value) => {
+            const aid = value.article_id ? String(value.article_id).trim().toLowerCase() : "";
+            const match = linkedIds.some((id) => id.trim().toLowerCase() === aid);
+            if (!match) {
+                console.log("No match (effect): article_id=", aid, ", linkedIds=", linkedIds);
+            }
+            return match;
+        });
+        console.log("Articles found (effect):", foundArticles);
+        setArticles(foundArticles);
+    }, [row, originalData, rowSpecificData?.linked_id]);
 
     if (!articles.length) return <div>No articles found.</div>;
 
@@ -48,7 +69,7 @@ export default function SubDataTable<TData>({ row }: SubDataTableProps<TData>) {
                 </TableCaption>
                 <TableHeader className="border-b">
                     <TableRow>
-                        <TableHead>Image</TableHead>
+                        {/* <TableHead>Image</TableHead> */}
                         <TableHead>Source & Description</TableHead>
                         <TableHead>Details</TableHead>
                     </TableRow>
@@ -56,7 +77,7 @@ export default function SubDataTable<TData>({ row }: SubDataTableProps<TData>) {
                 <TableBody>
                     {articles.map((article, idx) => (
                         <TableRow key={article.article_id || idx}>
-                            <TableCell>
+                            {/* <TableCell>
                                 {article.image_url ? (
                                     <div className="aspect-video min-h-[120px] w-full max-w-[213px] flex items-center justify-center overflow-hidden bg-gray-100 rounded">
                                         <img
@@ -67,15 +88,32 @@ export default function SubDataTable<TData>({ row }: SubDataTableProps<TData>) {
                                         />
                                     </div>
                                 ) : null}
-                            </TableCell>
+                            </TableCell> */}
                             <TableCell className="align-top whitespace-pre-line break-words max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl text-gray-800 dark:text-gray-100">
-                                <div className="font-bold text-base mb-1">Source: {article.source_name}</div>
-                                <div>{article.description}</div>
+                                <div className="font-bold text-base mb-1">Source: {article.source}</div>
+                                <div>{article.body}</div>
                             </TableCell>
                             <TableCell>
                                 <table className="min-w-[200px] text-xs w-full rounded">
                                     <tbody>
-                                        <tr className="odd:bg-gray-100/60 dark:odd:bg-white/10">
+                                        {Object.keys(article)
+                                            .filter(
+                                                (key) =>
+                                                    !["source", "title", "article_id", "image_url", "body"].includes(key)
+                                            )
+                                            .map((key) => (
+                                                <tr key={key} className="odd:bg-gray-100/60 dark:odd:bg-white/10">
+                                                    <td className="font-semibold px-2 py-1 text-gray-800 dark:text-gray-100">
+                                                        {key.charAt(0).toUpperCase() + key.slice(1)}
+                                                    </td>
+                                                    <td className="py-1 text-gray-800 dark:text-gray-100">
+                                                        {Array.isArray((article as any)[key])
+                                                            ? (article as any)[key].join(", ")
+                                                            : (article as any)[key] ?? "-"}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        {/* <tr className="odd:bg-gray-100/60 dark:odd:bg-white/10">
                                             <td className="font-semibold px-2 py-1 text-gray-800 dark:text-gray-100">Creator</td>
                                             <td className="py-1 text-gray-800 dark:text-gray-100">{article.creator ? article.creator.join(", ") : "-"}</td>
                                         </tr>
@@ -98,7 +136,7 @@ export default function SubDataTable<TData>({ row }: SubDataTableProps<TData>) {
                                         <tr className="odd:bg-gray-100/60 dark:odd:bg-white/10">
                                             <td className="font-semibold px-2 py-1 text-gray-800 dark:text-gray-100">Sentiment</td>
                                             <td className="py-1 text-gray-800 dark:text-gray-100">{article.sentiment}</td>
-                                        </tr>
+                                        </tr> */}
                                     </tbody>
                                 </table>
                             </TableCell>

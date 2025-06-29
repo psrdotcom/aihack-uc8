@@ -11,8 +11,11 @@ import Dashboard from './modules/dashboard/Dashboard';
 import Search from './modules/search/Search';
 import { Upload } from './modules/upload/Upload';
 
+
 function App() {
   return (
+  //  <QueryClientProvider client={queryClient}>
+  //  </QueryClientProvider>
     <Router>
       <Layout>
         <div className="w-full dark:bg-gray-950 bg-opacity-90 rounded-xl shadow-lg min-h-[90vh] flex flex-col">

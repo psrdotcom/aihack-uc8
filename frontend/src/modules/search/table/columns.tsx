@@ -27,7 +27,7 @@ export type Article = {
   source_url: string
 }
 
-export const columns: ColumnDef<GroupedCategory>[] = [
+export const columns: ColumnDef<Article>[] = [
   {
     accessorKey: "Details",
     header: "",

@@ -32,47 +32,41 @@ jobs:
 
       - name: Build and publish each layer from backend/layers/
         run: |
+          mkdir -p layer_zips
+          
           for dir in backend/layers/*; do
             if [ -f "$dir/requirements.txt" ]; then
               LAYER_NAME=$(basename "$dir")
               echo "🔧 Building layer: $LAYER_NAME"
 
-              # Clean old build (if any) and recreate
               rm -rf "$dir/python"
               mkdir -p "$dir/python"
 
-              # Install dependencies
               pip install --upgrade --no-cache-dir -r "$dir/requirements.txt" -t "$dir/python"
 
-              # Clean unnecessary files
               find "$dir/python" -type d -name "__pycache__" -exec rm -rf {} +
               find "$dir/python" -type d -name "tests" -exec rm -rf {} +
               find "$dir/python" -type f -name "*.pyc" -delete
               find "$dir/python" -type d -name "*.dist-info" -exec rm -rf {} +
 
-              # Zip the layer
-              zip_path="${LAYER_NAME}.zip"
+              ZIP_PATH="layer_zips/${LAYER_NAME}.zip"
+
+              echo "📦 Zipping to $ZIP_PATH"
               cd "$dir"
-              zip -r "../../${zip_path}" python > /dev/null
+              zip -r "../../${ZIP_PATH}" python > /dev/null
               cd - > /dev/null
 
-              # Upload to S3
-              echo "📤 Uploading $zip_path to S3"
-              aws s3 cp "$zip_path" s3://$S3_BUCKET/layers/$zip_path
+              echo "📤 Uploading $ZIP_PATH to S3"
+              aws s3 cp "$ZIP_PATH" s3://$S3_BUCKET/layers/${LAYER_NAME}.zip
 
-              # Publish the Lambda layer
               echo "🚀 Publishing layer: $LAYER_NAME"
               LAYER_ARN=$(aws lambda publish-layer-version \
                 --layer-name "$LAYER_NAME" \
                 --description "Lambda layer for $LAYER_NAME" \
-                --content S3Bucket=$S3_BUCKET,S3Key=layers/$zip_path \
+                --content S3Bucket=$S3_BUCKET,S3Key=layers/${LAYER_NAME}.zip \
                 --compatible-runtimes $PYTHON_VERSION \
                 --query 'LayerVersionArn' --output text)
 
               echo "✅ Published $LAYER_NAME: $LAYER_ARN"
-
-              # Optionally remove the zip after upload
-              rm -f "$zip_path"
             fi
           done
-

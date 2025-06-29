@@ -33,40 +33,52 @@ jobs:
       - name: Build and publish each layer from backend/layers/
         run: |
           mkdir -p layer_zips
-          
-          for dir in backend/layers/*; do
-            if [ -f "$dir/requirements.txt" ]; then
-              LAYER_NAME=$(basename "$dir")
-              echo "🔧 Building layer: $LAYER_NAME"
 
-              rm -rf "$dir/python"
-              mkdir -p "$dir/python"
+          for req_file in backend/requirements*.txt; do
+            LAYER_NAME=$(basename "$req_file" .txt)
+            echo "🔧 Building Lambda layer: $LAYER_NAME from $req_file"
 
-              pip install --upgrade --no-cache-dir -r "$dir/requirements.txt" -t "$dir/python"
+            # Clean previous layer build
+            rm -rf layer_build
+            mkdir -p layer_build/python
 
-              find "$dir/python" -type d -name "__pycache__" -exec rm -rf {} +
-              find "$dir/python" -type d -name "tests" -exec rm -rf {} +
-              find "$dir/python" -type f -name "*.pyc" -delete
-              find "$dir/python" -type d -name "*.dist-info" -exec rm -rf {} +
+            # Install dependencies
+            pip install --upgrade --no-cache-dir -r "$req_file" -t layer_build/python
 
-              ZIP_PATH="layer_zips/${LAYER_NAME}.zip"
+            # Clean up unnecessary files
+            find layer_build/python -type d -name "__pycache__" -exec rm -rf {} +
+            find layer_build/python -type d -name "tests" -exec rm -rf {} +
+            find layer_build/python -type f -name "*.pyc" -delete
+            find layer_build/python -type d \( -name "*.dist-info" -o -name "*.egg-info" \) -exec rm -rf {} +
 
-              echo "📦 Zipping to $ZIP_PATH"
-              cd "$dir"
-              zip -r "../../${ZIP_PATH}" python > /dev/null
-              cd - > /dev/null
+            # Optional: strip native extensions
+            find layer_build/python -type f \( -name "*.so" -o -name "*.pyd" \) -exec strip {} \; 2>/dev/null || true
 
-              echo "📤 Uploading $ZIP_PATH to S3"
-              aws s3 cp "$ZIP_PATH" s3://$S3_BUCKET/layers/${LAYER_NAME}.zip
+            # Check size
+            echo "📏 Size of $LAYER_NAME before zipping:"
+            du -sh layer_build/python
 
-              echo "🚀 Publishing layer: $LAYER_NAME"
-              LAYER_ARN=$(aws lambda publish-layer-version \
-                --layer-name "$LAYER_NAME" \
-                --description "Lambda layer for $LAYER_NAME" \
-                --content S3Bucket=$S3_BUCKET,S3Key=layers/${LAYER_NAME}.zip \
-                --compatible-runtimes $PYTHON_VERSION \
-                --query 'LayerVersionArn' --output text)
+            # Zip layer
+            ZIP_PATH="layer_zips/${LAYER_NAME}.zip"
+            cd layer_build
+            zip -q -r "../${ZIP_PATH}" python || (echo "❌ Zipping failed" && exit 1)
+            cd ..
 
-              echo "✅ Published $LAYER_NAME: $LAYER_ARN"
-            fi
+            # Upload to S3
+            echo "📤 Uploading $ZIP_PATH to S3"
+            aws s3 cp "${ZIP_PATH}" "s3://$S3_BUCKET/layers/${LAYER_NAME}.zip"
+
+            # Publish Lambda layer
+            echo "🚀 Publishing Lambda layer: $LAYER_NAME"
+            LAYER_ARN=$(aws lambda publish-layer-version \
+              --layer-name "$LAYER_NAME" \
+              --description "Lambda layer built from $req_file" \
+              --content S3Bucket=$S3_BUCKET,S3Key=layers/${LAYER_NAME}.zip \
+              --compatible-runtimes $PYTHON_VERSION \
+              --query 'LayerVersionArn' --output text)
+
+            echo "✅ Published $LAYER_NAME: $LAYER_ARN"
+
+            # Clean up
+            rm -rf layer_build "${ZIP_PATH}"
           done

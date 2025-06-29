@@ -55,6 +55,7 @@ def lambda_handler(event, context):
         # cursor.close()
         # conn.close()
         lambda_client = boto3.client('lambda')
+        print("Invoking second Lambda function")
         response = lambda_client.invoke(
             FunctionName='clustering_service',
             InvocationType='Event'

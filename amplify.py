@@ -1,6 +1,7 @@
 import boto3
 import sys
 import time
+import os
 
 GITHUB_PAT = os.getenv("GITHUB_PAT")
 if not GITHUB_PAT:
@@ -10,16 +11,24 @@ repo_full = sys.argv[1]  # Format: user/repo
 branch = sys.argv[2]
 repo_owner, repo_name = repo_full.split('/')
 app_name = f"amplify-{repo_name}"
+client = boto3.client('amplify','us-east-1')
+print(GITHUB_PAT)
 
-client = boto3.client('amplify')
-
+custom_rewrite_rules = [
+    {
+        'source': '/<*>',
+        'target': '/index.html',
+        'status': '404-200'
+    }
+]
 # Create Amplify App
 app_response = client.create_app(
     name=app_name,
     repository=f"https://github.com/{repo_owner}/{repo_name}",
     oauthToken=GITHUB_PAT,
     platform='WEB',
-    enableBranchAutoBuild=True
+    enableBranchAutoBuild=True,
+    customRules=custom_rewrite_rules
 )
 app_id = app_response['app']['appId']
 print(f"[✓] Created Amplify app with ID: {app_id}")

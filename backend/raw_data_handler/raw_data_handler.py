@@ -11,7 +11,7 @@ import io
 import re
 import boto3
 import traceback
-from test_agent import is_relevance
+from Agent_helper import is_relevance
 from botocore.config import Config
 
 BUCKET_NAME = 'awstraindata'

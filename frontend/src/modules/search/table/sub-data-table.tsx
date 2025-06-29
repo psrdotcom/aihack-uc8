@@ -47,8 +47,10 @@ export default function SubDataTable<TData>({ row, originalData }: SubDataTableP
             .map((id) => id.trim())
             .filter((id) => id.length > 0);
         console.log("Linked IDs (effect):", linkedIds);
+        console.log("Original data (effect):", originalData);
         const foundArticles: Article[] = ((originalData as Article[] | undefined) || []).filter((value) => {
             const aid = value.article_id ? String(value.article_id).trim().toLowerCase() : "";
+            console.log("Checking article_id:", aid, "against linkedIds:", linkedIds);
             const match = linkedIds.some((id) => id.trim().toLowerCase() === aid);
             if (!match) {
                 console.log("No match (effect): article_id=", aid, ", linkedIds=", linkedIds);
@@ -103,10 +105,10 @@ export default function SubDataTable<TData>({ row, originalData }: SubDataTableP
                                             )
                                             .map((key) => (
                                                 <tr key={key} className="odd:bg-gray-100/60 dark:odd:bg-white/10">
-                                                    <td className="font-semibold px-2 py-1 text-gray-800 dark:text-gray-100">
+                                                    <td className="font-semibold px-2 py-1 text-gray-800 dark:text-gray-100 whitespace-pre-line break-words max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl">
                                                         {key.charAt(0).toUpperCase() + key.slice(1)}
                                                     </td>
-                                                    <td className="py-1 text-gray-800 dark:text-gray-100">
+                                                    <td className="py-1 text-gray-800 dark:text-gray-100 whitespace-pre-line break-words max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl">
                                                         {Array.isArray((article as any)[key])
                                                             ? (article as any)[key].join(", ")
                                                             : (article as any)[key] ?? "-"}

@@ -36,6 +36,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   console.log('DataTable rowSelection', data);
+  console.log('DataTable originalData in data-table.tsx', originalData);
   // Wrap setRowSelection to notify parent
   const handleRowSelectionChange = React.useCallback((updater: any) => {
     setRowSelection((prev) => {

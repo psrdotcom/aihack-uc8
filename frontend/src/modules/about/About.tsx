@@ -19,7 +19,7 @@ function About() {
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
         <Card className="xl:col-span-1 col-span-1">
           <h2>
-            <img src="/vite.svg" alt="Logo" className="w-32 h-32 object-contain rounded p-5" />
+            <img src="/Logo.jpg" alt="Logo" className="w-32 h-32 object-contain rounded p-5" />
           </h2>
         </Card>
         <Card className="xl:col-span-3 col-span-1">

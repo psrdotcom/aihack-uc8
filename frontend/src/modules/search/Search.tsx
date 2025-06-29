@@ -40,6 +40,7 @@ function renderSkeletonTable() {
 
 export default function Search() {
     const [dataState, setDataState] = useState<Article[]>([]);
+    const [originalDataset, setOriginalDataset] = useState<Article[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -56,10 +57,14 @@ export default function Search() {
     });
 
     const fetchFeedList = async () => {
-        const response = await fetch(`http://localhost:3001/GetFeed`);
+    console.log('Fetching feed list...');
+    // const data2 = await response2.json();
+    // console.log('Sample fetch',    data2);
+    const response = await fetch(`${API_BASE_URL}/getfeed`);
+        // const response = await fetch(`http://localhost:3001/GetFeed`);
         // const response = await fetch(`${API_BASE_URL}/getfeed`);
         const data = await response.json();
-        console.log(data);
+        console.log('Initial Fetch', data);
         return data as Article[];
     }
 
@@ -84,7 +89,7 @@ export default function Search() {
         const start = (page - 1) * pageSize;
         const end = start + pageSize;
         const result = data?.slice(start, end) ?? [];
-        
+        setOriginalDataset(data ?? []);
         setLoading(false);
         setDataState(result);
         setTotal(data?.length ?? 0);
@@ -117,7 +122,7 @@ export default function Search() {
                     renderSkeletonTable()
                     :
                     <div>
-                        <DataTable columns={columns} data={dataState} onRowSelectionChange={setRowSelection} />
+                        <DataTable columns={columns} data={dataState} originalData={originalDataset} onRowSelectionChange={setRowSelection} />
                         {/* You can use rowSelection here as needed, e.g., for debugging: */}
 
                         <div className="flex items-center justify-between mt-4 print-hidden">

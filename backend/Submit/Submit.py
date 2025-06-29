@@ -2,7 +2,7 @@ import base64
 import json
 from requests_toolbelt.multipart import decoder
 import uuid
-from Utils import get_postgresql_connection
+
 from fastapi import FastAPI
 from docx import Document
 import csv
@@ -10,7 +10,11 @@ import io
 import re
 import boto3
 import traceback
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from Utils import get_postgresql_connection
 app = FastAPI()
 
 s3 = boto3.client('s3')

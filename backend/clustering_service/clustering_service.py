@@ -1,5 +1,5 @@
-from Utils import get_postgresql_connection
-
+import os
+import sys
 import numpy as np
 from sentence_transformers import SentenceTransformer
 import faiss
@@ -9,6 +9,10 @@ import networkx as nx
 from collections import defaultdict
 import pickle
 import json
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from Utils import get_postgresql_connection
 
 class NewsArticleIndexer:
     """

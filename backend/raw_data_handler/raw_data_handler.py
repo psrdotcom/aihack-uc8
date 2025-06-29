@@ -3,7 +3,6 @@ import datetime
 import json
 import time
 import uuid
-from Utils import get_postgresql_connection
 from fastapi import FastAPI
 from docx import Document
 import csv
@@ -13,6 +12,10 @@ import boto3
 import traceback
 from Agent_helper import is_relevance
 from botocore.config import Config
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from Utils import get_postgresql_connection
 
 BUCKET_NAME = 'awstraindata'
 role = 'arn:aws:iam::269854564686:role/hackathon-comprehend-role'

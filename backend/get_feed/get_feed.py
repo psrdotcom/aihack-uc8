@@ -14,8 +14,5 @@ def lambda_handler(event, context):
             "headers": {
                 "Content-Type": "application/json"
             },
-            "body": json.dumps({
-                "status": "success",
-                "data": articles
-            })
+            "body": json.dumps(articles)
     }

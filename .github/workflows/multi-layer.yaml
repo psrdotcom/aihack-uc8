@@ -56,7 +56,7 @@ jobs:
 
               # Upload to S3
               echo "Uploading $LAYER_NAME.zip to S3"
-              aws s3 cp "$dir.zip" s3://$S3_BUCKET/layers/$LAYER_NAME.zip
+              aws s3 cp "${LAYER_NAME}.zip" s3://$S3_BUCKET/layers/${LAYER_NAME}.zip
 
               # Publish to Lambda
               echo "Publishing Lambda layer: $LAYER_NAME"

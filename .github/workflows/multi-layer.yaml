@@ -3,7 +3,7 @@ name: Build Lambda Layers
 on:
   push:
     paths:
-      - 'layers/**'
+      - 'backend/layers/**'
   workflow_dispatch:
 
 jobs:
@@ -30,43 +30,49 @@ jobs:
           aws-secret-access-key: o56LCVEDcTPD8RgU2iWtz8SBklKa5DqQ6+nCYawf
           aws-region: us-east-1
 
-      - name: Build and publish each layer
+      - name: Build and publish each layer from backend/layers/
         run: |
           for dir in backend/layers/*; do
             if [ -f "$dir/requirements.txt" ]; then
               LAYER_NAME=$(basename "$dir")
-              echo "Building layer: $LAYER_NAME"
+              echo "🔧 Building layer: $LAYER_NAME"
 
-              # Create target directory
+              # Clean old build (if any) and recreate
+              rm -rf "$dir/python"
               mkdir -p "$dir/python"
 
-              # Install Python packages
+              # Install dependencies
               pip install --upgrade --no-cache-dir -r "$dir/requirements.txt" -t "$dir/python"
 
-              # Clean up unnecessary files
+              # Clean unnecessary files
               find "$dir/python" -type d -name "__pycache__" -exec rm -rf {} +
               find "$dir/python" -type d -name "tests" -exec rm -rf {} +
               find "$dir/python" -type f -name "*.pyc" -delete
               find "$dir/python" -type d -name "*.dist-info" -exec rm -rf {} +
 
               # Zip the layer
+              zip_path="${LAYER_NAME}.zip"
               cd "$dir"
-              zip -r "../$LAYER_NAME.zip" python > /dev/null
-              cd ../..
+              zip -r "../../${zip_path}" python > /dev/null
+              cd - > /dev/null
 
               # Upload to S3
-              echo "Uploading $LAYER_NAME.zip to S3"
-              aws s3 cp "${LAYER_NAME}.zip" s3://$S3_BUCKET/layers/${LAYER_NAME}.zip
+              echo "📤 Uploading $zip_path to S3"
+              aws s3 cp "$zip_path" s3://$S3_BUCKET/layers/$zip_path
 
-              # Publish to Lambda
-              echo "Publishing Lambda layer: $LAYER_NAME"
+              # Publish the Lambda layer
+              echo "🚀 Publishing layer: $LAYER_NAME"
               LAYER_ARN=$(aws lambda publish-layer-version \
                 --layer-name "$LAYER_NAME" \
-                --description "Layer for $LAYER_NAME" \
-                --content S3Bucket=$S3_BUCKET,S3Key=layers/$LAYER_NAME.zip \
+                --description "Lambda layer for $LAYER_NAME" \
+                --content S3Bucket=$S3_BUCKET,S3Key=layers/$zip_path \
                 --compatible-runtimes $PYTHON_VERSION \
                 --query 'LayerVersionArn' --output text)
 
-              echo "Published $LAYER_NAME: $LAYER_ARN"
+              echo "✅ Published $LAYER_NAME: $LAYER_ARN"
+
+              # Optionally remove the zip after upload
+              rm -f "$zip_path"
             fi
           done
+

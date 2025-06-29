@@ -12,6 +12,7 @@ import re
 import boto3
 import traceback
 from test_agent import is_relevance
+from botocore.config import Config
 
 BUCKET_NAME = 'awstraindata'
 role = 'arn:aws:iam::269854564686:role/hackathon-comprehend-role'
@@ -54,7 +55,8 @@ def lambda_handler(event, context):
         #         get_data_inline(output_csv.getvalue(), article_id, article['Date'], comprehend, cursor, conn)
         # cursor.close()
         # conn.close()
-        lambda_client = boto3.client('lambda')
+        config = Config(connect_timeout=10, read_timeout=30)
+        lambda_client = boto3.client('lambda',config=config)
         print("Invoking second Lambda function")
         response = lambda_client.invoke(
             FunctionName='clustering_service',

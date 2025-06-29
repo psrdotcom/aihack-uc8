@@ -1,23 +1,4 @@
-# 📦 News Articles Relation & Pattern Detection (Offline)
-
-# ---- 0. Install Required Packages ----
-# pip install sentence-transformers faiss-cpu bertopic hdbscan umap-learn transformers accelerate
-
-# ---- 1. Load and Preprocess Articles ----
 from Utils import get_postgresql_connection
-
-
-articles = [
-    {"title": "Minister Lokesh to Visit Parvathipuram for Student Felicitation and TDP Meet", "content": "Parvathipuram:  Education Minister and TDP National General Secretary Nara Lokesh will visit Parvathipuram Manyam district on Monday. Party sources said that plans are being made to organize government and party programs simultaneously. On Monday morning, a felicitation program will be held at a private function hall under the auspices of the Education Department for students who have achieved the best results in class 10. 150 people will be given mementos and gifts. Later, a meeting will be held with party workers of Parvathipuram constituency. For this, MLA Vijayachandra and Ravi, a member of the tour inspection team, inspected the government junior college grounds and the private grounds in Venkampet. It has been decided to ensure that the venues of the two programs are as far apart as possible. Minister Lokesh's visit It seems that the Venkampet ground has almost been finalized following Lokesh's suggestion. Collector Shyam Prasad met with district officials and made suggestions on the arrangements for the minister's visit."},
-    {"title": "Farmer Fatally Hit by Two-Wheeler While Returning Home in Palakonda", "content": "Palakonda: A small farmer who was making a living doing chores was on his way home from his farm when fate took a turn. He was hit by a two-wheeler while crossing the road. Going into the details given by SI K. Prayogamurthy... Garbhana Lalkas (62) of Gopalapuram village was returning home on Friday evening after completing his daily chores and doing some laundry. While crossing the road near the village, Yakula Raghu, who was riding a two-wheeler from Palakonda towards Rajam, hit Laxmum with his vehicle. The injured, who was seriously injured, was rushed to the Palakonda Area Hospital by the locals. Laxmum had already died. His wife Annapurna and three children wept bitterly upon learning about the incident. The SI said that a case has been registered in this incident."},
-    {"title": "New Tariffs Imposed", "content": "The government imposed new tariffs on steel imports from Asia."},
-    {"title": "Opposition Criticizes Trade Policy", "content": "Opposition leaders argue the trade deal will hurt local manufacturing."},
-]
-
-
-
-# 📦 Advanced News Articles Indexing & Pattern Detection
-# Comprehensive solution with multiple algorithms for different use cases
 
 import numpy as np
 from sentence_transformers import SentenceTransformer

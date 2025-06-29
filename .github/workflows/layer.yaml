@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies to python/
         run: |
           mkdir -p python
-          pip install -r backend/requirements.txt --platform manylinux2014_x86_64 --only-binary=:all: -t python/
+          pip install -r backend/requirements.txt --platform manylinux2014_x86_64 --only-binary=:all: --no-deps -t python/
 
       - name: Clean up unnecessary files
         run: |

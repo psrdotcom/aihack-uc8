@@ -303,14 +303,14 @@ def main():
         query_idx = i
         print(f"\n🔍 i: '{i}'")
         print(f"\n🔍 Finding articles similar to: '{articles[query_idx]['title']}'")
-        linked_id = [];
-        print("\n1. 🧠 Semantic Similarity (Best for meaning):")
+        linked_id = []
+        print("\n1.  Semantic Similarity (Best for meaning):")
         semantic_results = indexer.find_similar_semantic(query_idx, k=3)
         for idx in semantic_results:
             linked_id.append(articles[idx]['article_id'])
             print(f"   - {articles[idx]['title']}")
         
-        # print("\n2. 📝 TF-IDF Similarity (Best for keywords):")
+        # print("\n2.  TF-IDF Similarity (Best for keywords):")
         # tfidf_results = indexer.find_similar_tfidf(query_idx, k=3)
         # for idx in tfidf_results:
         #     print(f"   - {articles[idx]['title']}")
@@ -344,51 +344,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# ===== ALGORITHM RECOMMENDATIONS =====
-
-"""
-🎯 BEST ALGORITHMS FOR DIFFERENT USE CASES:
-
-1. **SMALL DATASETS (<10K articles)**:
-   - Index: FAISS IndexFlatL2 (exact search)
-   - Similarity: Hybrid (semantic + TF-IDF)
-   - Best for: High accuracy, all-purpose
-
-2. **LARGE DATASETS (>10K articles)**:
-   - Index: FAISS IndexIVFFlat or IndexHNSW
-   - Similarity: Semantic embeddings with FAISS
-   - Best for: Speed and scalability
-
-3. **KEYWORD-FOCUSED SEARCH**:
-   - Index: Elasticsearch/Solr or TF-IDF with sparse matrices
-   - Similarity: BM25 or TF-IDF cosine similarity
-   - Best for: Exact keyword matching
-
-4. **SEMANTIC UNDERSTANDING**:
-   - Index: Dense vector index (FAISS)
-   - Embeddings: sentence-transformers or OpenAI embeddings
-   - Best for: Understanding meaning and context
-
-5. **REAL-TIME UPDATES**:
-   - Index: FAISS with IndexIVFFlat
-   - Update strategy: Incremental indexing
-   - Best for: News feeds, live updates
-
-6. **TOPIC DISCOVERY**:
-   - Algorithm: BERTopic or LDA
-   - Features: Document embeddings or TF-IDF
-   - Best for: Finding emerging topics
-
-7. **ARTICLE NETWORKS**:
-   - Algorithm: Graph-based (NetworkX + PageRank)
-   - Features: Similarity-based edges
-   - Best for: Finding influential articles
-
-🚀 PERFORMANCE OPTIMIZATIONS:
-- Use GPU acceleration for embeddings
-- Implement caching for frequent queries
-- Use approximate nearest neighbor search for large datasets
-- Precompute similarity matrices for small datasets
-- Implement incremental indexing for real-time updates
-"""

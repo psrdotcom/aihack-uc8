@@ -54,6 +54,12 @@ def lambda_handler(event, context):
                 get_data_inline(output_csv.getvalue(), article_id, article['Date'], comprehend, cursor, conn)
         cursor.close()
         conn.close()
+        lambda_client = boto3.client('lambda')
+        response = lambda_client.invoke(
+            FunctionName='clustering_service',
+            InvocationType='Event'
+        )
+        print(f"Second Lambda function invoked: {response}")
     except Exception as e:
         traceback.print_exc()
         print(f"Error processing event: {e}")

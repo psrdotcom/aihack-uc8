@@ -17,43 +17,43 @@ BUCKET_NAME = 'awstraindata'
 role = 'arn:aws:iam::269854564686:role/hackathon-comprehend-role'
 def lambda_handler(event, context):
     try:
-        conn = get_postgresql_connection()
-        cursor = conn.cursor()
-        comprehend = boto3.client('comprehend', region_name='us-east-1')
-        for record in event['Records']:
-            print(f"New record: {record}")
-            bucket = record['s3']['bucket']['name']
-            key = record['s3']['object']['key']
-            print(f"Processing file from bucket: {bucket}, key: {key}")
-            s3 = boto3.client('s3')
-            print(f"Connecting to S3 bucket: {bucket}")
-            obj = s3.get_object(Bucket=bucket, Key=key)
-            stream = io.BytesIO(obj['Body'].read()) 
-            articles = extract_articles(stream)
-            print(f"Extracted {len(articles)} articles from part")
-            for article in articles:
-                print(f"Processing article: {article['Title']}")
-                # Check if article is relevant
-                is_relevant = is_relevance(article)
-                if not is_relevant:
-                    print(f"Article {article['Title']} is not relevant, skipping")
-                    continue
-                output_csv = io.StringIO()
-                writer = csv.DictWriter(output_csv, fieldnames=["Title", "Source", "Date", "Content"])
-                # writer.writeheader()
-                writer.writerow(article)
-                article_id = str(uuid.uuid4())
-                # Generate unique filename
-                csv_filename = f"input/articles-{article_id}.csv"
-                cursor.execute("""
-                        INSERT INTO articles (article_id, title, body, source, published_date)
-                        VALUES (%s, %s, %s, %s, %s)""", (article_id, article['Title'], article['Content'], article['Source'], article['Date']))
-                # Upload to S3
-                print(f"Uploading CSV to S3: {csv_filename}")
-                conn.commit() 
-                get_data_inline(output_csv.getvalue(), article_id, article['Date'], comprehend, cursor, conn)
-        cursor.close()
-        conn.close()
+        # conn = get_postgresql_connection()
+        # cursor = conn.cursor()
+        # comprehend = boto3.client('comprehend', region_name='us-east-1')
+        # for record in event['Records']:
+        #     print(f"New record: {record}")
+        #     bucket = record['s3']['bucket']['name']
+        #     key = record['s3']['object']['key']
+        #     print(f"Processing file from bucket: {bucket}, key: {key}")
+        #     s3 = boto3.client('s3')
+        #     print(f"Connecting to S3 bucket: {bucket}")
+        #     obj = s3.get_object(Bucket=bucket, Key=key)
+        #     stream = io.BytesIO(obj['Body'].read()) 
+        #     articles = extract_articles(stream)
+        #     print(f"Extracted {len(articles)} articles from part")
+        #     for article in articles:
+        #         print(f"Processing article: {article['Title']}")
+        #         # Check if article is relevant
+        #         is_relevant = is_relevance(article)
+        #         if not is_relevant:
+        #             print(f"Article {article['Title']} is not relevant, skipping")
+        #             continue
+        #         output_csv = io.StringIO()
+        #         writer = csv.DictWriter(output_csv, fieldnames=["Title", "Source", "Date", "Content"])
+        #         # writer.writeheader()
+        #         writer.writerow(article)
+        #         article_id = str(uuid.uuid4())
+        #         # Generate unique filename
+        #         csv_filename = f"input/articles-{article_id}.csv"
+        #         cursor.execute("""
+        #                 INSERT INTO articles (article_id, title, body, source, published_date)
+        #                 VALUES (%s, %s, %s, %s, %s)""", (article_id, article['Title'], article['Content'], article['Source'], article['Date']))
+        #         # Upload to S3
+        #         print(f"Uploading CSV to S3: {csv_filename}")
+        #         conn.commit() 
+        #         get_data_inline(output_csv.getvalue(), article_id, article['Date'], comprehend, cursor, conn)
+        # cursor.close()
+        # conn.close()
         lambda_client = boto3.client('lambda')
         response = lambda_client.invoke(
             FunctionName='clustering_service',
@@ -68,14 +68,12 @@ def get_data_inline(data, articles_id, article_date, comprehend, cursor, conn):
     print(f"Processing data for article ID: {articles_id}")
     entities_response = comprehend.detect_entities(
                 Text=data,
-                # DataAccessRoleArn=role_arn,
                 LanguageCode='en'
             )
     print(f"Entities detected: {entities_response['Entities']}")
     add_entities_to_article(conn, cursor, articles_id, entities_response['Entities'])
     response = comprehend.detect_key_phrases(
             Text=data,
-            # DataAccessRoleArn=role_arn,
             LanguageCode='en'
         )
     print(f"Key phrases detected: {response['KeyPhrases']}")
@@ -84,7 +82,6 @@ def get_data_inline(data, articles_id, article_date, comprehend, cursor, conn):
     add_keyphrase_to_article(conn, cursor, articles_id, article_date, response['KeyPhrases'])
     sentiment_response = comprehend.detect_sentiment(
                 Text=data,
-                # DataAccessRoleArn=role_arn,
                 LanguageCode='en'
     )
     print(f"Sentiment detected: {sentiment_response['Sentiment']}")
